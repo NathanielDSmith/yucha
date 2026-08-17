@@ -118,6 +118,9 @@ export function IncomeManager() {
           onChange={(e) => setType(e.target.value as IncomeType)}
           className="income-manager__select"
         >
+          <option value="" disabled hidden>
+            Job type
+          </option>
           {Object.entries(INCOME_TYPES).map(([key, label]) => (
             <option key={key} value={key}>
               {label}
@@ -130,6 +133,9 @@ export function IncomeManager() {
           onChange={(e) => setFrequency(e.target.value as IncomeFrequency)}
           className="income-manager__select"
         >
+          <option value="" disabled hidden>
+            Frequency
+          </option>
           {FREQUENCIES.map((freq) => (
             <option key={freq} value={freq}>
               {freq.charAt(0).toUpperCase() + freq.slice(1)}
