@@ -5,6 +5,7 @@ import { Subscriptions } from './components/Subscriptions'
 import { Insights } from './components/Insights'
 import { QuickCheck } from './components/QuickCheck'
 import { GoalsPlanner } from './components/GoalsPlanner'
+import { NetWorthDashboard } from './components/NetWorthDashboard'
 import { ReviewReminder } from './components/ReviewReminder'
 import { Onboarding } from './components/Onboarding'
 import { CurrencySelector } from './components/CurrencySelector'
@@ -13,6 +14,7 @@ import { db } from './lib/db'
 import './App.css'
 
 const TABS = [
+  { id: 'net-worth', label: 'Net Worth' },
   { id: 'budget', label: 'Budget' },
   { id: 'spending', label: 'Spending' },
   { id: 'subscriptions', label: 'Subscriptions' },
@@ -24,7 +26,7 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id']
 
 function App() {
-  const [tab, setTab] = useState<TabId>('budget')
+  const [tab, setTab] = useState<TabId>('net-worth')
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const { currency } = useCurrency()
@@ -73,6 +75,7 @@ function App() {
 
       <div className="app__content">
         <ReviewReminder />
+        {tab === 'net-worth' && <NetWorthDashboard />}
         {tab === 'budget' && <BudgetPlanner />}
         {tab === 'spending' && <SpendingLog />}
         {tab === 'subscriptions' && <Subscriptions />}
