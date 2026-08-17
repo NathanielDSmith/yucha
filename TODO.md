@@ -3,9 +3,9 @@
 ## Priority 1: Critical Fixes & Core Features
 
 ### Navigation & UX Fixes
-- [ ] **Fix home page button navigation** — Log Spending & View Progress buttons not routing to tabs
-- [ ] **Fix tab state management** — Navigation clicks not updating displayed content reliably
-- [ ] **Test all button interactions** — Ensure click handlers work across all components
+- [x] **Fix home page button navigation** — Log Spending & View Progress buttons not routing to tabs
+- [x] **Fix tab state management** — Navigation clicks not updating displayed content reliably
+- [x] **Test all button interactions** — Ensure click handlers work across all components
 
 ### Goals Improvements
 - [ ] **Hide "Add to this goal" input by default** — Clean up initial load
