@@ -2,6 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react'
 import type { SpendingEntry } from '../lib/spending'
 import { formatCurrency } from '../lib/currency'
 import { BUDGET_CONFIG_ID, db } from '../lib/db'
+import { useNotification } from '../lib/NotificationContext'
+import { useCurrencyContext } from '../lib/CurrencyContext'
 import './SpendingLog.css'
 
 function today(): string {
@@ -18,6 +20,8 @@ export function SpendingLog() {
   const [category, setCategory] = useState('')
   const [date, setDate] = useState(today())
   const [note, setNote] = useState('')
+  const { showNotification } = useNotification()
+  const { currency } = useCurrencyContext()
 
   async function refresh() {
     const all = await db.spendingEntries.toArray()
@@ -45,6 +49,18 @@ export function SpendingLog() {
       note: note.trim() || undefined,
     }
     await db.spendingEntries.add(entry)
+
+    // Calculate compound growth impact over 10 years
+    const annualReturn = 0.07
+    const futureValue = parsedAmount * Math.pow(1 + annualReturn, 10)
+    const impact = futureValue - parsedAmount
+
+    showNotification(
+      `${formatCurrency(parsedAmount, currency)} spent. Over 10 years, that could be worth ${formatCurrency(futureValue, currency)}.`,
+      'info',
+      5000,
+    )
+
     setAmount('')
     setNote('')
     await refresh()
