@@ -11,6 +11,8 @@ import { ReviewReminder } from './components/ReviewReminder'
 import { Onboarding } from './components/Onboarding'
 import { CurrencySelector } from './components/CurrencySelector'
 import { Icon } from './components/Icon'
+import { NotificationContainer } from './components/NotificationContainer'
+import { NotificationProvider } from './lib/NotificationContext'
 import { useCurrency } from './lib/useCurrency'
 import { db } from './lib/db'
 import './App.css'
@@ -61,6 +63,7 @@ function App() {
 
   return (
     <main className="app">
+      <NotificationContainer />
       <header className="app__header">
         <h1>Yucha</h1>
         <nav className="app__tabs">

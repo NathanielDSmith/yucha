@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
+import { useNotification } from '../lib/NotificationContext'
 import { GOAL_CATEGORIES, type Goal, type GoalCategory, getGoalProgress, getGoalStatus } from '../lib/goals'
 import './GoalsPlanner.css'
 
@@ -12,6 +13,7 @@ export function GoalsPlanner() {
   const [category, setCategory] = useState<GoalCategory>('savings')
   const [targetDate, setTargetDate] = useState('')
   const { currency } = useCurrencyContext()
+  const { showNotification } = useNotification()
 
   useEffect(() => {
     refresh()
@@ -54,7 +56,16 @@ export function GoalsPlanner() {
   async function updateGoalAmount(id: string, amount: number) {
     const goal = await db.goals.get(id)
     if (goal) {
-      await db.goals.update(id, { currentAmount: Math.max(0, amount) })
+      const newAmount = Math.max(0, amount)
+      const addedAmount = newAmount - goal.currentAmount
+      await db.goals.update(id, { currentAmount: newAmount })
+
+      const progress = Math.round((newAmount / goal.targetAmount) * 100)
+      const message = progress === 100
+        ? `🎉 Goal complete! You reached ${goal.name}!`
+        : `You just added ${formatCurrency(addedAmount, currency)} to ${goal.name}. Progress: ${progress}%`
+
+      showNotification(message, progress === 100 ? 'success' : 'info', 4000)
       await refresh()
     }
   }
