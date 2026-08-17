@@ -5,7 +5,11 @@ import { useCurrencyContext } from '../lib/CurrencyContext'
 import { getEmergencyFundMetrics } from '../lib/emergency'
 import { calculateBurnRateMetrics } from '../lib/burnrate'
 
-export function Home() {
+interface HomeProps {
+  onNavigate?: (tab: string) => void
+}
+
+export function Home({ onNavigate }: HomeProps) {
   const [primaryMetric, setPrimaryMetric] = useState<{
     label: string
     value: string
@@ -67,17 +71,21 @@ export function Home() {
           <h2 style={{ margin: '0 0 var(--space-xl) 0', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             {primaryMetric?.label}
           </h2>
-          <div style={{ fontSize: 'var(--font-size-5xl)', fontWeight: 'var(--font-weight-bold)', marginBottom: 'var(--space-lg)', fontVariantNumeric: 'tabular-nums' }}>
+          <div style={{ fontSize: 'var(--font-size-5xl)', fontWeight: 'var(--font-weight-bold)', marginBottom: 'var(--space-2xl)', fontVariantNumeric: 'tabular-nums' }}>
             {primaryMetric?.value}
           </div>
-          <p style={{ margin: 0, fontSize: 'var(--font-size-base)', color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
+          <p style={{ margin: '0 0 var(--space-2xl) 0', fontSize: 'var(--font-size-base)', color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
             {primaryMetric?.message}
           </p>
           <div style={{ marginTop: 'var(--space-3xl)', display: 'flex', gap: 'var(--space-md)', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button style={{ padding: 'var(--space-md) var(--space-lg)', background: 'var(--color-primary)', color: 'var(--color-text-inverse)', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 'var(--font-weight-semibold)' }}>
+            <button
+              onClick={() => onNavigate?.('track-spending')}
+              style={{ padding: 'var(--space-md) var(--space-lg)', background: 'var(--color-primary)', color: 'var(--color-text-inverse)', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 'var(--font-weight-semibold)' }}>
               + Log Spending
             </button>
-            <button style={{ padding: 'var(--space-md) var(--space-lg)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 'var(--font-weight-semibold)' }}>
+            <button
+              onClick={() => onNavigate?.('insights-net-worth')}
+              style={{ padding: 'var(--space-md) var(--space-lg)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 'var(--font-weight-semibold)' }}>
               View Progress
             </button>
           </div>

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Home } from './components/Home'
 import { BudgetPlanner } from './components/BudgetPlanner'
-import { SpendingLog } from './components/SpendingLog'
-import { Subscriptions } from './components/Subscriptions'
+import { SpendingHub } from './components/SpendingHub'
 import { GoalsPlanner } from './components/GoalsPlanner'
 import { NetWorthDashboard } from './components/NetWorthDashboard'
 import { EmergencyFundTracker } from './components/EmergencyFundTracker'
@@ -16,7 +15,7 @@ import { useCurrency } from './lib/useCurrency'
 import { db } from './lib/db'
 import './App.css'
 
-type TabId = 'home' | 'track-spending' | 'track-subscriptions' | 'insights-net-worth' | 'insights-emergency' | 'insights-burn-rate' | 'goals' | 'settings-budget' | 'settings-accounts'
+type TabId = 'home' | 'track-spending' | 'insights-net-worth' | 'insights-emergency' | 'insights-burn-rate' | 'goals' | 'settings-budget' | 'settings-accounts'
 
 const MAIN_TABS = [
   { id: 'home' as const, icon: 'home' as const, title: 'Home' },
@@ -78,9 +77,8 @@ function App() {
 
       <div className="app__content">
         <ReviewReminder />
-        {tab === 'home' && <Home />}
-        {tab === 'track-spending' && <SpendingLog />}
-        {tab === 'track-subscriptions' && <Subscriptions />}
+        {tab === 'home' && <Home onNavigate={(newTab) => setTab(newTab as TabId)} />}
+        {tab === 'track-spending' && <SpendingHub />}
         {tab === 'insights-net-worth' && <NetWorthDashboard />}
         {tab === 'insights-emergency' && <EmergencyFundTracker />}
         {tab === 'insights-burn-rate' && <BurnRateTracker />}
