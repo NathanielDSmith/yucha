@@ -102,6 +102,12 @@
   gap: var(--space-md);
 }
 
+.goals-planner__card-actions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
 .goals-planner__goal-name {
   margin: 0 0 var(--space-xs) 0;
   font-size: var(--font-size-lg);
@@ -116,6 +122,25 @@
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.goals-planner__add-icon {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--transition-fast);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.goals-planner__add-icon:hover {
+  color: var(--color-primary);
 }
 
 .goals-planner__delete {
