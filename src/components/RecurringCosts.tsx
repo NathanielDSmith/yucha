@@ -1,22 +1,33 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { costPerUse, totalPaid, type Subscription } from '../lib/subscriptions'
 import { formatCurrency } from '../lib/currency'
+import { useCurrencyContext } from '../lib/CurrencyContext'
+import { getCurrency } from '../lib/currencies'
 import { db } from '../lib/db'
 import './Subscriptions.css'
 
-function today(): string {
-  const d = new Date()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${d.getFullYear()}-${month}-${day}`
+const COST_CATEGORIES = {
+  housing: 'Housing',
+  utilities: 'Utilities',
+  insurance: 'Insurance',
+  subscriptions: 'Subscriptions',
+  other: 'Other',
+}
+
+type CostCategory = keyof typeof COST_CATEGORIES
+
+function today(): number {
+  return new Date().getDate()
 }
 
 export function RecurringCosts() {
   const [costs, setCosts] = useState<Subscription[]>([])
   const [name, setName] = useState('')
-  const [category, setCategory] = useState('')
+  const [category, setCategory] = useState<CostCategory>('other')
   const [monthlyAmount, setMonthlyAmount] = useState('')
-  const [startDate, setStartDate] = useState(today())
+  const [dayOfMonth, setDayOfMonth] = useState(today())
+  const { currency } = useCurrencyContext()
+  const currencySymbol = getCurrency(currency)?.symbol || '$'
 
   async function refresh() {
     const all = await db.subscriptions.toArray()
@@ -32,17 +43,20 @@ export function RecurringCosts() {
     const amount = Number(monthlyAmount)
     if (!name.trim() || !amount || amount <= 0) return
 
+    const dateStr = `2024-01-${String(dayOfMonth).padStart(2, '0')}`
+
     await db.subscriptions.add({
       id: crypto.randomUUID(),
       name: name.trim(),
-      category: category.trim() || 'recurring',
+      category: COST_CATEGORIES[category],
       monthlyAmount: amount,
-      startDate,
+      startDate: dateStr,
       usageCount: 0,
     })
     setName('')
-    setCategory('')
+    setCategory('other')
     setMonthlyAmount('')
+    setDayOfMonth(today())
     await refresh()
   }
 
@@ -65,24 +79,26 @@ export function RecurringCosts() {
       <form className="subscriptions__form" onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Name (e.g., Rent, Mobile Bill, Insurance)"
+          placeholder="Name (e.g., Rent, Mobile Bill, Netflix)"
           value={name}
           onChange={(e) => setName(e.target.value)}
           id="recurring-name"
           name="recurring-name"
         />
-        <input
-          type="text"
-          placeholder="Category"
+        <select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => setCategory(e.target.value as CostCategory)}
           id="recurring-category"
           name="recurring-category"
-        />
+        >
+          {Object.entries(COST_CATEGORIES).map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
+        </select>
         <input
           type="number"
           inputMode="decimal"
-          placeholder="Monthly amount"
+          placeholder={currencySymbol}
           step="0.01"
           value={monthlyAmount}
           onChange={(e) => setMonthlyAmount(e.target.value)}
@@ -90,13 +106,17 @@ export function RecurringCosts() {
           name="recurring-amount"
         />
         <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          id="recurring-date"
-          name="recurring-date"
+          type="number"
+          min="1"
+          max="31"
+          placeholder="Day"
+          value={dayOfMonth}
+          onChange={(e) => setDayOfMonth(Number(e.target.value))}
+          id="recurring-day"
+          name="recurring-day"
+          title="Day of month it comes out (1-31)"
         />
-        <button type="submit">Add recurring cost</button>
+        <button type="submit">Add</button>
       </form>
 
       {costs.length === 0 && (
