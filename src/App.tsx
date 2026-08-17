@@ -7,6 +7,7 @@ import { QuickCheck } from './components/QuickCheck'
 import { GoalsPlanner } from './components/GoalsPlanner'
 import { NetWorthDashboard } from './components/NetWorthDashboard'
 import { EmergencyFundTracker } from './components/EmergencyFundTracker'
+import { BurnRateTracker } from './components/BurnRateTracker'
 import { ReviewReminder } from './components/ReviewReminder'
 import { Onboarding } from './components/Onboarding'
 import { CurrencySelector } from './components/CurrencySelector'
@@ -17,6 +18,7 @@ import './App.css'
 const TABS = [
   { id: 'net-worth', label: 'Net Worth' },
   { id: 'emergency', label: 'Emergency Fund' },
+  { id: 'burn-rate', label: 'Burn Rate' },
   { id: 'budget', label: 'Budget' },
   { id: 'spending', label: 'Spending' },
   { id: 'subscriptions', label: 'Subscriptions' },
@@ -79,6 +81,7 @@ function App() {
         <ReviewReminder />
         {tab === 'net-worth' && <NetWorthDashboard />}
         {tab === 'emergency' && <EmergencyFundTracker />}
+        {tab === 'burn-rate' && <BurnRateTracker />}
         {tab === 'budget' && <BudgetPlanner />}
         {tab === 'spending' && <SpendingLog />}
         {tab === 'subscriptions' && <Subscriptions />}
