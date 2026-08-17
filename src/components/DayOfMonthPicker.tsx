@@ -1,0 +1,48 @@
+import { useState } from 'react'
+import './DayOfMonthPicker.css'
+
+interface DayOfMonthPickerProps {
+  value: number
+  onChange: (day: number) => void
+  label?: string
+}
+
+export function DayOfMonthPicker({ value, onChange, label = 'Payday' }: DayOfMonthPickerProps) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  const handleSelectDay = (day: number) => {
+    onChange(day)
+    setIsOpen(false)
+  }
+
+  const days = Array.from({ length: 31 }, (_, i) => i + 1)
+
+  return (
+    <div className="day-picker">
+      <label className="day-picker__label">{label}</label>
+      <div className="day-picker__container">
+        <button
+          type="button"
+          className="day-picker__button"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          Day {value}
+        </button>
+        {isOpen && (
+          <div className="day-picker__calendar">
+            {days.map((day) => (
+              <button
+                key={day}
+                type="button"
+                className={`day-picker__day ${day === value ? 'day-picker__day--selected' : ''}`}
+                onClick={() => handleSelectDay(day)}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

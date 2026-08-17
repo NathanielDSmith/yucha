@@ -3,6 +3,7 @@ import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { calculateTotalMonthlyIncome, calculateIncomeRange, type IncomeSource, type IncomeType, type IncomeFrequency } from '../lib/income'
+import { DayOfMonthPicker } from './DayOfMonthPicker'
 import './IncomeManager.css'
 
 const INCOME_TYPES: Record<IncomeType, string> = {
@@ -137,14 +138,9 @@ export function IncomeManager() {
         </select>
 
         {frequency === 'monthly' && (
-          <input
-            type="number"
-            min="1"
-            max="31"
-            placeholder="Day of month"
-            value={dayOfMonth}
-            onChange={(e) => setDayOfMonth(e.target.value)}
-            className="income-manager__input"
+          <DayOfMonthPicker
+            value={Number(dayOfMonth)}
+            onChange={(day) => setDayOfMonth(String(day))}
           />
         )}
 
