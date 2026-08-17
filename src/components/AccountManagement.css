@@ -1,0 +1,197 @@
+.account-management {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.account-management__summary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  color: var(--color-text-inverse);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-2xl);
+}
+
+.account-management__summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.account-management__summary-label {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+}
+
+.account-management__summary-value {
+  margin: 0;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.account-management__form {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: grid;
+  grid-template-columns: 1fr 150px 150px auto;
+  gap: var(--space-md);
+  align-items: end;
+}
+
+.account-management__input,
+.account-management__select {
+  font: var(--font-size-sm) var(--font-family-sans);
+  color: var(--color-text-primary);
+  background: var(--color-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  transition: all var(--transition-fast);
+}
+
+.account-management__input:focus,
+.account-management__select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-wash);
+}
+
+.account-management__button {
+  font: var(--font-weight-medium) var(--font-size-sm) var(--font-family-sans);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-weight: var(--font-weight-semibold);
+}
+
+.account-management__button:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.account-management__table-wrapper {
+  overflow-x: auto;
+}
+
+.account-management__table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.account-management__table thead {
+  background: var(--color-surface-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.account-management__table th {
+  padding: var(--space-lg);
+  text-align: left;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.account-management__table td {
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.account-management__table tbody tr:hover {
+  background: var(--color-surface-2);
+}
+
+.account-management__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.account-management__name {
+  font-weight: var(--font-weight-bold);
+}
+
+.account-management__type {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.account-management__amount {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.account-management__percent {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+.account-management__actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+}
+
+.account-management__delete-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  padding: var(--space-sm);
+  transition: color var(--transition-fast);
+}
+
+.account-management__delete-btn:hover {
+  color: var(--color-critical);
+}
+
+.account-management__empty {
+  padding: var(--space-3xl) var(--space-lg);
+  text-align: center;
+  background: var(--color-surface-1);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 768px) {
+  .account-management__form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .account-management__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .account-management__table-wrapper {
+    font-size: var(--font-size-xs);
+  }
+
+  .account-management__table th,
+  .account-management__table td {
+    padding: var(--space-md);
+  }
+}

@@ -8,6 +8,7 @@ import { GoalsPlanner } from './components/GoalsPlanner'
 import { NetWorthDashboard } from './components/NetWorthDashboard'
 import { EmergencyFundTracker } from './components/EmergencyFundTracker'
 import { BurnRateTracker } from './components/BurnRateTracker'
+import { AccountManagement } from './components/AccountManagement'
 import { ReviewReminder } from './components/ReviewReminder'
 import { Onboarding } from './components/Onboarding'
 import { CurrencySelector } from './components/CurrencySelector'
@@ -16,6 +17,7 @@ import { db } from './lib/db'
 import './App.css'
 
 const TABS = [
+  { id: 'accounts', label: 'Accounts' },
   { id: 'net-worth', label: 'Net Worth' },
   { id: 'emergency', label: 'Emergency Fund' },
   { id: 'burn-rate', label: 'Burn Rate' },
@@ -30,7 +32,7 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id']
 
 function App() {
-  const [tab, setTab] = useState<TabId>('net-worth')
+  const [tab, setTab] = useState<TabId>('accounts')
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const { currency } = useCurrency()
@@ -79,6 +81,7 @@ function App() {
 
       <div className="app__content">
         <ReviewReminder />
+        {tab === 'accounts' && <AccountManagement />}
         {tab === 'net-worth' && <NetWorthDashboard />}
         {tab === 'emergency' && <EmergencyFundTracker />}
         {tab === 'burn-rate' && <BurnRateTracker />}
