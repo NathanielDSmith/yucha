@@ -18,11 +18,11 @@ const FREQUENCIES: IncomeFrequency[] = ['weekly', 'biweekly', 'monthly', 'yearly
 export function IncomeManager() {
   const [sources, setSources] = useState<IncomeSource[]>([])
   const [name, setName] = useState('')
-  const [type, setType] = useState<IncomeType>('job')
+  const [type, setType] = useState<IncomeType | ''>('')
   const [amount, setAmount] = useState('')
   const [minAmount, setMinAmount] = useState('')
   const [maxAmount, setMaxAmount] = useState('')
-  const [frequency, setFrequency] = useState<IncomeFrequency>('monthly')
+  const [frequency, setFrequency] = useState<IncomeFrequency | ''>('')
   const [dayOfMonth, setDayOfMonth] = useState('1')
   const [isVariable, setIsVariable] = useState(false)
   const { currency } = useCurrencyContext()
@@ -42,7 +42,7 @@ export function IncomeManager() {
     const parsedMin = minAmount ? Number(minAmount) : undefined
     const parsedMax = maxAmount ? Number(maxAmount) : undefined
 
-    if (!name.trim()) return
+    if (!name.trim() || !type || !frequency) return
 
     // Validate amount based on variable income setting
     if (isVariable) {
@@ -67,9 +67,11 @@ export function IncomeManager() {
 
     await db.incomeSources.add(source)
     setName('')
+    setType('')
     setAmount('')
     setMinAmount('')
     setMaxAmount('')
+    setFrequency('')
     setIsVariable(false)
     await refresh()
   }
@@ -115,7 +117,7 @@ export function IncomeManager() {
 
         <select
           value={type}
-          onChange={(e) => setType(e.target.value as IncomeType)}
+          onChange={(e) => setType(e.target.value as IncomeType | '')}
           className="income-manager__select"
         >
           <option value="" disabled hidden>
@@ -130,7 +132,7 @@ export function IncomeManager() {
 
         <select
           value={frequency}
-          onChange={(e) => setFrequency(e.target.value as IncomeFrequency)}
+          onChange={(e) => setFrequency(e.target.value as IncomeFrequency | '')}
           className="income-manager__select"
         >
           <option value="" disabled hidden>
