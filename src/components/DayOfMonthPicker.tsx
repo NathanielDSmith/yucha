@@ -51,7 +51,7 @@ export function DayOfMonthPicker({ value, onChange, label = 'Payday' }: DayOfMon
                 className={`day-picker__day ${day === value ? 'day-picker__day--selected' : ''}`}
                 onClick={() => handleSelectDay(day)}
               >
-                {formatOrdinal(day)}
+                {day}
               </button>
             ))}
           </div>
