@@ -32,16 +32,15 @@ export function DayOfMonthPicker({ value, onChange, label = 'Payday' }: DayOfMon
   const days = Array.from({ length: 31 }, (_, i) => i + 1)
 
   return (
-    <div className="day-picker">
-      <label className="day-picker__label">{label}</label>
-      <div className="day-picker__container">
-        <button
-          type="button"
-          className="day-picker__button"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {formatOrdinal(value)}
-        </button>
+    <div className="day-picker__container">
+      <button
+        type="button"
+        className="day-picker__button"
+        onClick={() => setIsOpen(!isOpen)}
+        title={label}
+      >
+        {value ? formatOrdinal(value) : label}
+      </button>
         {isOpen && (
           <div className="day-picker__calendar">
             {days.map((day) => (
@@ -56,7 +55,6 @@ export function DayOfMonthPicker({ value, onChange, label = 'Payday' }: DayOfMon
             ))}
           </div>
         )}
-      </div>
     </div>
   )
 }
