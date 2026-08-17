@@ -3,6 +3,7 @@ import { Home } from './components/Home'
 import { BudgetPlanner } from './components/BudgetPlanner'
 import { SpendingHub } from './components/SpendingHub'
 import { GoalsPlanner } from './components/GoalsPlanner'
+import { IncomeManager } from './components/IncomeManager'
 import { NetWorthDashboard } from './components/NetWorthDashboard'
 import { EmergencyFundTracker } from './components/EmergencyFundTracker'
 import { BurnRateTracker } from './components/BurnRateTracker'
@@ -17,13 +18,14 @@ import { useCurrency } from './lib/useCurrency'
 import { db } from './lib/db'
 import './App.css'
 
-type TabId = 'home' | 'track-spending' | 'insights-net-worth' | 'insights-emergency' | 'insights-burn-rate' | 'goals' | 'settings-budget' | 'settings-accounts'
+type TabId = 'home' | 'track-spending' | 'insights-net-worth' | 'insights-emergency' | 'insights-burn-rate' | 'goals' | 'income' | 'settings-budget' | 'settings-accounts'
 
 const MAIN_TABS = [
   { id: 'home' as const, icon: 'home' as const, title: 'Home' },
   { id: 'track-spending' as const, icon: 'send' as const, title: 'Spending' },
   { id: 'insights-net-worth' as const, icon: 'trending-up' as const, title: 'Insights' },
   { id: 'goals' as const, icon: 'flag' as const, title: 'Goals' },
+  { id: 'income' as const, icon: 'dollar-sign' as const, title: 'Income' },
   { id: 'settings-budget' as const, icon: 'settings' as const, title: 'Settings' },
 ] as const
 
@@ -91,6 +93,7 @@ function App() {
         {tab === 'insights-emergency' && <EmergencyFundTracker />}
         {tab === 'insights-burn-rate' && <BurnRateTracker />}
         {tab === 'goals' && <GoalsPlanner />}
+        {tab === 'income' && <IncomeManager />}
         {tab === 'settings-budget' && <BudgetPlanner />}
         {tab === 'settings-accounts' && <AccountManagement />}
       </div>
