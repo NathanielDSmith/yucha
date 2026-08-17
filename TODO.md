@@ -13,13 +13,13 @@
 - [ ] **Reduce text clutter** — Make Goals section less overwhelming
 
 ### Notification & Reminder System
-- [ ] **Create toast/notification component** — For contextual feedback
-- [ ] **Implement spending entry notifications:**
-  - Celebrate budget progress: "You're under budget this week!"
-  - Goal progress: "You just funded your emergency fund by $25!"
-  - Compound impact reminder: "That $10 coffee = $2,600 over 10 years invested"
+- [x] **Create toast/notification component** — For contextual feedback
+- [x] **Implement spending entry notifications:**
+  - Compound impact reminder: "That $10 coffee = $19.67 over 10 years invested"
+  - Goal progress: "You just added $500 to Emergency Fund. Progress: 30%"
+  - Goal celebration: "🎉 Goal complete!"
 - [ ] **Add optional "impact awareness" tagging** — Users mark categories to see long-term cost
-- [ ] **Show friendly messages when logging spending** — Educate, don't judge
+- [x] **Show friendly messages when logging spending** — Educate, don't judge
 
 ### Multi-Income Support
 - [ ] **Track multiple income sources** — Job, side gig, investments, etc.
