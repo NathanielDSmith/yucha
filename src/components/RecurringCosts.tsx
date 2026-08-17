@@ -111,12 +111,12 @@ export function RecurringCosts() {
           type="number"
           min="1"
           max="31"
-          placeholder="Day"
+          placeholder="Day (1-31)"
           value={dayOfMonth}
           onChange={(e) => setDayOfMonth(Number(e.target.value))}
           id="recurring-day"
           name="recurring-day"
-          title="Day of month it comes out (1-31)"
+          title="Which day of the month does this charge (1-31)"
         />
         <button type="submit">Add</button>
       </form>
@@ -162,19 +162,11 @@ export function RecurringCosts() {
                   <div className="subscriptions__stats">
                     <div>
                       <span>Monthly</span>
-                      <strong>{formatCurrency(cost.monthlyAmount)}</strong>
+                      <strong>{formatCurrency(cost.monthlyAmount, currency)}</strong>
                     </div>
                     <div>
-                      <span>Paid to date</span>
-                      <strong>{formatCurrency(paid)}</strong>
-                    </div>
-                    <div>
-                      <span>Months active</span>
-                      <strong>{cost.usageCount}</strong>
-                    </div>
-                    <div>
-                      <span>Total cost</span>
-                      <strong>{formatCurrency(paid)}</strong>
+                      <span>Annual (12 months)</span>
+                      <strong>{formatCurrency(cost.monthlyAmount * 12, currency)}</strong>
                     </div>
                   </div>
                 </div>

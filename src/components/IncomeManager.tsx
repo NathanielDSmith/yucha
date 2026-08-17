@@ -41,7 +41,14 @@ export function IncomeManager() {
     const parsedMin = minAmount ? Number(minAmount) : undefined
     const parsedMax = maxAmount ? Number(maxAmount) : undefined
 
-    if (!name.trim() || !parsedAmount || parsedAmount <= 0) return
+    if (!name.trim()) return
+
+    // Validate amount based on variable income setting
+    if (isVariable) {
+      if (!parsedMin || !parsedMax || parsedMin <= 0 || parsedMax <= 0) return
+    } else {
+      if (!parsedAmount || parsedAmount <= 0) return
+    }
 
     const source: IncomeSource = {
       id: crypto.randomUUID(),
