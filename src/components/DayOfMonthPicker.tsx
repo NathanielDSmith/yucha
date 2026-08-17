@@ -7,6 +7,20 @@ interface DayOfMonthPickerProps {
   label?: string
 }
 
+function getOrdinalSuffix(num: number): string {
+  if (num > 3 && num < 21) return 'th'
+  switch (num % 10) {
+    case 1: return 'st'
+    case 2: return 'nd'
+    case 3: return 'rd'
+    default: return 'th'
+  }
+}
+
+function formatOrdinal(num: number): string {
+  return `${num}${getOrdinalSuffix(num)}`
+}
+
 export function DayOfMonthPicker({ value, onChange, label = 'Payday' }: DayOfMonthPickerProps) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -26,7 +40,7 @@ export function DayOfMonthPicker({ value, onChange, label = 'Payday' }: DayOfMon
           className="day-picker__button"
           onClick={() => setIsOpen(!isOpen)}
         >
-          Day {value}
+          {formatOrdinal(value)}
         </button>
         {isOpen && (
           <div className="day-picker__calendar">
@@ -37,7 +51,7 @@ export function DayOfMonthPicker({ value, onChange, label = 'Payday' }: DayOfMon
                 className={`day-picker__day ${day === value ? 'day-picker__day--selected' : ''}`}
                 onClick={() => handleSelectDay(day)}
               >
-                {day}
+                {formatOrdinal(day)}
               </button>
             ))}
           </div>
