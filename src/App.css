@@ -22,10 +22,7 @@
   margin: 0;
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-primary);
 }
 
 .app__tabs {
@@ -48,11 +45,22 @@
   color: var(--color-text-secondary);
   transition: all var(--transition-base);
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.app__tab-label {
+  display: none;
 }
 
 .app__tab:hover {
   color: var(--color-text-primary);
   background: var(--color-surface-2);
+}
+
+.app__tab:hover svg {
+  stroke: var(--color-text-primary);
 }
 
 .app__tab:focus-visible {
@@ -64,6 +72,21 @@
   background: var(--color-primary);
   color: var(--color-text-inverse);
   font-weight: var(--font-weight-semibold);
+}
+
+.app__tab--active svg {
+  stroke: var(--color-text-inverse);
+}
+
+.app__tab svg {
+  stroke: currentColor;
+  transition: stroke var(--transition-base);
+}
+
+@media (min-width: 640px) {
+  .app__tab-label {
+    display: inline;
+  }
 }
 
 .app__content {

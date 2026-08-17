@@ -3,11 +3,11 @@
 :root {
   /* Color Palette — Bright, Forward-Looking, Positive */
 
-  /* Primary Action & Emphasis */
-  --color-primary: #00d4ff;
-  --color-primary-dark: #0099cc;
-  --color-primary-light: #33e0ff;
-  --color-primary-wash: rgba(0, 212, 255, 0.08);
+  /* Primary Action & Emphasis — Warm Yellow/Gold */
+  --color-primary: #f4a600;
+  --color-primary-dark: #d68f00;
+  --color-primary-light: #ffc233;
+  --color-primary-wash: rgba(244, 166, 0, 0.08);
 
   /* Growth & Success */
   --color-success: #39ff14;
@@ -15,11 +15,11 @@
   --color-success-light: #66ff47;
   --color-success-wash: rgba(57, 255, 20, 0.08);
 
-  /* Accent & Learning */
-  --color-accent: #ff6b35;
-  --color-accent-dark: #dd5a28;
-  --color-accent-light: #ff8a5c;
-  --color-accent-wash: rgba(255, 107, 53, 0.08);
+  /* Accent & Learning — Complementary Gold */
+  --color-accent: #f4a600;
+  --color-accent-dark: #d68f00;
+  --color-accent-light: #ffc233;
+  --color-accent-wash: rgba(244, 166, 0, 0.08);
 
   /* Supporting Colors */
   --color-purple: #9d7fe8;
@@ -73,6 +73,8 @@
   --font-size-xl: 20px;
   --font-size-2xl: 24px;
   --font-size-3xl: 32px;
+  --font-size-4xl: 48px;
+  --font-size-5xl: 64px;
 
   --font-weight-regular: 400;
   --font-weight-medium: 500;

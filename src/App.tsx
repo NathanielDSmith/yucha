@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
+import { Home } from './components/Home'
 import { BudgetPlanner } from './components/BudgetPlanner'
 import { SpendingLog } from './components/SpendingLog'
 import { Subscriptions } from './components/Subscriptions'
-import { Insights } from './components/Insights'
-import { QuickCheck } from './components/QuickCheck'
 import { GoalsPlanner } from './components/GoalsPlanner'
 import { NetWorthDashboard } from './components/NetWorthDashboard'
 import { EmergencyFundTracker } from './components/EmergencyFundTracker'
@@ -12,27 +11,23 @@ import { AccountManagement } from './components/AccountManagement'
 import { ReviewReminder } from './components/ReviewReminder'
 import { Onboarding } from './components/Onboarding'
 import { CurrencySelector } from './components/CurrencySelector'
+import { Icon } from './components/Icon'
 import { useCurrency } from './lib/useCurrency'
 import { db } from './lib/db'
 import './App.css'
 
-const TABS = [
-  { id: 'accounts', label: 'Accounts' },
-  { id: 'net-worth', label: 'Net Worth' },
-  { id: 'emergency', label: 'Emergency Fund' },
-  { id: 'burn-rate', label: 'Burn Rate' },
-  { id: 'budget', label: 'Budget' },
-  { id: 'spending', label: 'Spending' },
-  { id: 'subscriptions', label: 'Subscriptions' },
-  { id: 'insights', label: 'Insights' },
-  { id: 'goals', label: 'Goals' },
-  { id: 'quick-check', label: 'Quick Check' },
+type TabId = 'home' | 'track-spending' | 'track-subscriptions' | 'insights-net-worth' | 'insights-emergency' | 'insights-burn-rate' | 'goals' | 'settings-budget' | 'settings-accounts'
+
+const MAIN_TABS = [
+  { id: 'home' as const, icon: 'home' as const, title: 'Home' },
+  { id: 'track-spending' as const, icon: 'send' as const, title: 'Spending' },
+  { id: 'insights-net-worth' as const, icon: 'trending-up' as const, title: 'Insights' },
+  { id: 'goals' as const, icon: 'flag' as const, title: 'Goals' },
+  { id: 'settings-budget' as const, icon: 'settings' as const, title: 'Settings' },
 ] as const
 
-type TabId = (typeof TABS)[number]['id']
-
 function App() {
-  const [tab, setTab] = useState<TabId>('accounts')
+  const [tab, setTab] = useState<TabId>('home')
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const { currency } = useCurrency()
@@ -65,14 +60,16 @@ function App() {
       <header className="app__header">
         <h1>Yucha</h1>
         <nav className="app__tabs">
-          {TABS.map((t) => (
+          {MAIN_TABS.map((t) => (
             <button
               key={t.id}
               type="button"
-              className={tab === t.id ? 'app__tab app__tab--active' : 'app__tab'}
-              onClick={() => setTab(t.id)}
+              title={t.title}
+              className={tab.startsWith(t.id) ? 'app__tab app__tab--active' : 'app__tab'}
+              onClick={() => setTab(t.id as TabId)}
             >
-              {t.label}
+              <Icon name={t.icon} size={20} />
+              <span className="app__tab-label">{t.title}</span>
             </button>
           ))}
         </nav>
@@ -81,16 +78,15 @@ function App() {
 
       <div className="app__content">
         <ReviewReminder />
-        {tab === 'accounts' && <AccountManagement />}
-        {tab === 'net-worth' && <NetWorthDashboard />}
-        {tab === 'emergency' && <EmergencyFundTracker />}
-        {tab === 'burn-rate' && <BurnRateTracker />}
-        {tab === 'budget' && <BudgetPlanner />}
-        {tab === 'spending' && <SpendingLog />}
-        {tab === 'subscriptions' && <Subscriptions />}
-        {tab === 'insights' && <Insights />}
+        {tab === 'home' && <Home />}
+        {tab === 'track-spending' && <SpendingLog />}
+        {tab === 'track-subscriptions' && <Subscriptions />}
+        {tab === 'insights-net-worth' && <NetWorthDashboard />}
+        {tab === 'insights-emergency' && <EmergencyFundTracker />}
+        {tab === 'insights-burn-rate' && <BurnRateTracker />}
         {tab === 'goals' && <GoalsPlanner />}
-        {tab === 'quick-check' && <QuickCheck />}
+        {tab === 'settings-budget' && <BudgetPlanner />}
+        {tab === 'settings-accounts' && <AccountManagement />}
       </div>
     </main>
   )

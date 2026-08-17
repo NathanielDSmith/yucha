@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "dexie": "^4.4.5",
+    "feather-icons": "^4.29.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
