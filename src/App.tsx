@@ -31,6 +31,11 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
   const { currency } = useCurrency()
 
+  const handleTabChange = (newTab: TabId) => {
+    console.log('Navigation triggered:', { from: tab, to: newTab })
+    setTab(newTab)
+  }
+
   useEffect(() => {
     async function checkOnboarding() {
       const settings = await db.appSettings.get(1)
@@ -65,7 +70,7 @@ function App() {
               type="button"
               title={t.title}
               className={tab.startsWith(t.id) ? 'app__tab app__tab--active' : 'app__tab'}
-              onClick={() => setTab(t.id as TabId)}
+              onClick={() => handleTabChange(t.id as TabId)}
             >
               <Icon name={t.icon} size={20} />
               <span className="app__tab-label">{t.title}</span>
@@ -77,7 +82,7 @@ function App() {
 
       <div className="app__content">
         <ReviewReminder />
-        {tab === 'home' && <Home onNavigate={(newTab) => setTab(newTab as TabId)} />}
+        {tab === 'home' && <Home onNavigate={(newTab) => handleTabChange(newTab as TabId)} />}
         {tab === 'track-spending' && <SpendingHub />}
         {tab === 'insights-net-worth' && <NetWorthDashboard />}
         {tab === 'insights-emergency' && <EmergencyFundTracker />}
