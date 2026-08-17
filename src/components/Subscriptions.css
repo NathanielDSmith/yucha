@@ -15,7 +15,8 @@
   align-items: end;
 }
 
-.subscriptions__form input {
+.subscriptions__form input,
+.subscriptions__form select {
   font: var(--font-size-sm) var(--font-family-sans);
   color: var(--color-text-primary);
   background: var(--color-page);
@@ -26,7 +27,8 @@
   transition: all var(--transition-fast);
 }
 
-.subscriptions__form input:focus {
+.subscriptions__form input:focus,
+.subscriptions__form select:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-wash);
