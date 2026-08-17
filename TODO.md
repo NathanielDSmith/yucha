@@ -8,9 +8,9 @@
 - [x] **Test all button interactions** — Ensure click handlers work across all components
 
 ### Goals Improvements
-- [ ] **Hide "Add to this goal" input by default** — Clean up initial load
-- [ ] **Replace with + icon button** — Click to reveal input modal/box
-- [ ] **Reduce text clutter** — Make Goals section less overwhelming
+- [x] **Hide "Add to this goal" input by default** — Clean up initial load
+- [x] **Replace with + icon button** — Click to reveal input modal/box
+- [x] **Reduce text clutter** — Make Goals section less overwhelming
 
 ### Notification & Reminder System
 - [ ] **Create toast/notification component** — For contextual feedback
