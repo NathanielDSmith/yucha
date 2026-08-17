@@ -18,6 +18,7 @@ export interface AppSettings {
   lastReviewedAt: Date
   onboardingComplete?: boolean
   currency?: CurrencyCode
+  emergencyFundGoal?: number
 }
 
 // Single-row tables, always keyed at id 1 — there is exactly one active
