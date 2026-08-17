@@ -87,6 +87,21 @@
   font-weight: var(--font-weight-bold);
 }
 
+.day-picker__day--placeholder {
+  background: var(--color-surface-1);
+  color: var(--color-text-muted);
+  cursor: default;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.day-picker__day--placeholder:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface-1);
+}
+
 .day-picker__day:focus {
   outline: none;
   box-shadow: 0 0 0 2px var(--color-primary);

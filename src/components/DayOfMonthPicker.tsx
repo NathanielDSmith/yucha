@@ -43,6 +43,13 @@ export function DayOfMonthPicker({ value, onChange, label = 'Payday' }: DayOfMon
       </button>
         {isOpen && (
           <div className="day-picker__calendar">
+            <button
+              type="button"
+              className="day-picker__day day-picker__day--placeholder"
+              disabled
+            >
+              {label}
+            </button>
             {days.map((day) => (
               <button
                 key={day}
