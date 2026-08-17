@@ -1,0 +1,242 @@
+.recurring-costs-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.recurring-costs-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.recurring-costs-calendar__nav-button {
+  background: none;
+  border: none;
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  padding: var(--space-md);
+  color: var(--color-primary);
+  transition: color var(--transition-fast);
+}
+
+.recurring-costs-calendar__nav-button:hover {
+  color: var(--color-primary-dark);
+}
+
+.recurring-costs-calendar__title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  flex: 1;
+  text-align: center;
+}
+
+.recurring-costs-calendar__container {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: var(--space-lg);
+}
+
+.recurring-costs-calendar__calendar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+
+.recurring-costs-calendar__day-headers {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.recurring-costs-calendar__day-header {
+  text-align: center;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  padding: var(--space-sm) 0;
+}
+
+.recurring-costs-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-sm);
+}
+
+.recurring-costs-calendar__day {
+  aspect-ratio: 1;
+  background: var(--color-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  cursor: default;
+  transition: all var(--transition-fast);
+  min-height: 100px;
+}
+
+.recurring-costs-calendar__day--filled {
+  cursor: pointer;
+}
+
+.recurring-costs-calendar__day--filled:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-1);
+}
+
+.recurring-costs-calendar__day--selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-wash);
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.recurring-costs-calendar__day-number {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--space-xs);
+}
+
+.recurring-costs-calendar__day-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-size: var(--font-size-xs);
+}
+
+.recurring-costs-calendar__bill-count {
+  color: var(--color-text-muted);
+}
+
+.recurring-costs-calendar__day-total {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.recurring-costs-calendar__details {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  position: sticky;
+  top: var(--space-lg);
+  height: fit-content;
+}
+
+.recurring-costs-calendar__details-title {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.recurring-costs-calendar__bills-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.recurring-costs-calendar__bill-item {
+  padding: var(--space-md);
+  background: var(--color-page);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.recurring-costs-calendar__bill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xs);
+}
+
+.recurring-costs-calendar__bill-amount {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.recurring-costs-calendar__bill-category {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.recurring-costs-calendar__details-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-base);
+}
+
+.recurring-costs-calendar__details-label {
+  color: var(--color-text-muted);
+}
+
+.recurring-costs-calendar__details-total {
+  font-size: var(--font-size-lg);
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.recurring-costs-calendar__empty {
+  padding: var(--space-2xl);
+  text-align: center;
+  color: var(--color-text-muted);
+  background: var(--color-page);
+  border-radius: var(--radius-md);
+}
+
+.recurring-costs-calendar__empty p {
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .recurring-costs-calendar__container {
+    grid-template-columns: 1fr;
+  }
+
+  .recurring-costs-calendar__details {
+    position: static;
+  }
+
+  .recurring-costs-calendar__day {
+    min-height: 80px;
+  }
+}
+
+@media (max-width: 768px) {
+  .recurring-costs-calendar__day {
+    min-height: 70px;
+    font-size: var(--font-size-xs);
+  }
+
+  .recurring-costs-calendar__day-number {
+    font-size: var(--font-size-sm);
+  }
+}

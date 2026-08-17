@@ -4,6 +4,7 @@ import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { getCurrency } from '../lib/currencies'
 import { db } from '../lib/db'
+import { RecurringCostsCalendar } from './RecurringCostsCalendar'
 import './Subscriptions.css'
 
 const COST_CATEGORIES = {
@@ -26,6 +27,7 @@ export function RecurringCosts() {
   const [category, setCategory] = useState<CostCategory>('other')
   const [monthlyAmount, setMonthlyAmount] = useState('')
   const [dayOfMonth, setDayOfMonth] = useState(today())
+  const [showCalendar, setShowCalendar] = useState(false)
   const { currency } = useCurrencyContext()
   const currencySymbol = getCurrency(currency)?.symbol || '$'
 
@@ -125,46 +127,62 @@ export function RecurringCosts() {
         </p>
       )}
 
-      <div className="subscriptions__list">
-        {costs.map((cost) => {
-          const paid = totalPaid(cost)
-          const perUse = costPerUse(cost)
-          return (
-            <div className="subscriptions__card" key={cost.id}>
-              <div className="subscriptions__card-header">
-                <div>
-                  <strong>{cost.name}</strong>
-                  <span className="subscriptions__category">{cost.category}</span>
+      {costs.length > 0 && (
+        <>
+          <button
+            type="button"
+            className="subscriptions__calendar-toggle"
+            onClick={() => setShowCalendar(!showCalendar)}
+          >
+            {showCalendar ? '← Back to List' : '📅 View Calendar'}
+          </button>
+
+          {showCalendar ? (
+            <RecurringCostsCalendar />
+          ) : (
+            <div className="subscriptions__list">
+              {costs.map((cost) => {
+              const paid = totalPaid(cost)
+              const perUse = costPerUse(cost)
+              return (
+                <div className="subscriptions__card" key={cost.id}>
+                  <div className="subscriptions__card-header">
+                    <div>
+                      <strong>{cost.name}</strong>
+                      <span className="subscriptions__category">{cost.category}</span>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${cost.name}`}
+                      onClick={() => remove(cost.id)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="subscriptions__stats">
+                    <div>
+                      <span>Monthly</span>
+                      <strong>{formatCurrency(cost.monthlyAmount)}</strong>
+                    </div>
+                    <div>
+                      <span>Paid to date</span>
+                      <strong>{formatCurrency(paid)}</strong>
+                    </div>
+                    <div>
+                      <span>Months active</span>
+                      <strong>{cost.usageCount}</strong>
+                    </div>
+                    <div>
+                      <span>Total cost</span>
+                      <strong>{formatCurrency(paid)}</strong>
+                    </div>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  aria-label={`Remove ${cost.name}`}
-                  onClick={() => remove(cost.id)}
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="subscriptions__stats">
-                <div>
-                  <span>Monthly</span>
-                  <strong>{formatCurrency(cost.monthlyAmount)}</strong>
-                </div>
-                <div>
-                  <span>Paid to date</span>
-                  <strong>{formatCurrency(paid)}</strong>
-                </div>
-                <div>
-                  <span>Months active</span>
-                  <strong>{cost.usageCount}</strong>
-                </div>
-                <div>
-                  <span>Total cost</span>
-                  <strong>{formatCurrency(paid)}</strong>
-                </div>
-              </div>
-            </div>
-          )
-        })}</div>
+              )
+            })}</div>
+          )}
+        </>
+      )}
     </div>
   )
 }
