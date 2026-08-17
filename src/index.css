@@ -1,0 +1,75 @@
+/* Import design system */
+@import 'design-tokens.css';
+@import 'components.css';
+@import 'utilities.css';
+
+/* Root styles */
+:root {
+  /* Backwards compatibility aliases for existing components */
+  --surface-1: var(--color-surface-1);
+  --page: var(--color-page);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-muted);
+  --gridline: var(--color-border);
+  --baseline: var(--color-border-subtle);
+  --border-ring: var(--color-border-ring);
+  --sans: var(--font-family-sans);
+  --status-critical: var(--color-critical);
+  --status-critical-wash: var(--color-critical-wash);
+}
+
+body {
+  margin: 0;
+  font: var(--font-size-base) / var(--line-height-normal) var(--font-family-sans);
+  color: var(--color-text-secondary);
+  background: var(--color-page);
+  color-scheme: light dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2xl) 0;
+}
+
+h2 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-lg) 0;
+}
+
+h3 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-md) 0;
+}
+
+p {
+  margin: 0 0 var(--space-md) 0;
+  color: var(--color-text-secondary);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

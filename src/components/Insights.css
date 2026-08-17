@@ -1,0 +1,178 @@
+.insights {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.insights__card {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  transition: all var(--transition-base);
+}
+
+.insights__card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.insights__card h2 {
+  margin: 0 0 var(--space-lg) 0;
+  font-size: var(--font-size-xl);
+  color: var(--color-text-primary);
+}
+
+.insights__empty {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin: 0;
+  text-align: center;
+  padding: var(--space-2xl) var(--space-lg);
+}
+
+.insights__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.insights__table th,
+.insights__table td {
+  text-align: left;
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.insights__table th {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-surface-2);
+  text-transform: uppercase;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.04em;
+}
+
+.insights__table tr:hover {
+  background: var(--color-surface-2);
+}
+
+.insights__num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.insights__negative {
+  color: var(--color-critical);
+}
+
+.insights__retro-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-md);
+}
+
+.insights__retro-header h2 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  color: var(--color-text-primary);
+}
+
+.insights__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  flex-wrap: wrap;
+}
+
+.insights__controls select,
+.insights__controls input {
+  font: var(--font-size-sm) var(--font-family-sans);
+  color: var(--color-text-primary);
+  background: var(--color-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  transition: all var(--transition-fast);
+}
+
+.insights__controls select:focus,
+.insights__controls input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-wash);
+}
+
+.insights__controls label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.insights__controls input[type='number'] {
+  width: 70px;
+  text-align: right;
+}
+
+.insights__disclaimer {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin: var(--space-md) 0 var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-accent-wash);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-accent);
+  line-height: var(--line-height-relaxed);
+}
+
+.insights__retro-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.insights__retro-list li {
+  padding: var(--space-lg);
+  background: var(--color-primary-wash);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-base);
+}
+
+.insights__retro-list li:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.insights__retro-category {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.insights__retro-copy {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.insights__retro-copy strong {
+  color: var(--color-success);
+  font-weight: var(--font-weight-bold);
+}

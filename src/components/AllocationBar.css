@@ -1,0 +1,184 @@
+.allocation-bar {
+  position: relative;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  transition: all var(--transition-base);
+}
+
+.allocation-bar:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.allocation-bar__warning {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  color: var(--color-critical);
+  background: var(--color-critical-wash);
+  border-left: 3px solid var(--color-critical);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.allocation-bar__track {
+  display: flex;
+  gap: 2px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-2);
+  padding: 2px;
+}
+
+.allocation-bar__track--empty {
+  align-items: center;
+  justify-content: center;
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  height: auto;
+  padding: var(--space-lg);
+  border-radius: var(--radius-md);
+}
+
+.allocation-bar__segment {
+  min-width: 1px;
+  cursor: default;
+  border-radius: 2px;
+  transition: opacity var(--transition-fast);
+}
+
+.allocation-bar__segment:hover {
+  opacity: 0.85;
+}
+
+.allocation-bar__segment:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.allocation-bar__tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 10px));
+  background: var(--color-text-primary);
+  color: var(--color-text-inverse);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.allocation-bar__tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid var(--color-text-primary);
+}
+
+.allocation-bar__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md) var(--space-2xl);
+  list-style: none;
+  padding: 0;
+  margin: var(--space-lg) 0 0;
+}
+
+.allocation-bar__legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-sm);
+}
+
+.allocation-bar__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.allocation-bar__legend-name {
+  color: var(--color-text-secondary);
+}
+
+.allocation-bar__legend-amount {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.allocation-bar__table-toggle {
+  display: inline-block;
+  margin-top: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.allocation-bar__table-toggle:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.allocation-bar__table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-md);
+  font-size: var(--font-size-sm);
+}
+
+.allocation-bar__table th,
+.allocation-bar__table td {
+  text-align: left;
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.allocation-bar__table th {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-surface-2);
+  text-transform: uppercase;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.04em;
+}
+
+.allocation-bar__table tr:hover {
+  background: var(--color-surface-2);
+}
+
+.allocation-bar__table-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}

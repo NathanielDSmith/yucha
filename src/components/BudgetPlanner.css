@@ -1,0 +1,178 @@
+.budget-planner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.budget-planner input,
+.budget-planner select {
+  font: var(--font-size-sm) var(--font-family-sans);
+  color: var(--color-text-primary);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  transition: all var(--transition-fast);
+}
+
+.budget-planner input:focus,
+.budget-planner select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-wash);
+}
+
+.budget-planner button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.budget-planner__income,
+.budget-planner__categories {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  transition: all var(--transition-base);
+}
+
+.budget-planner__income:hover,
+.budget-planner__categories:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.budget-planner__income {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.budget-planner__income label {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.budget-planner__income input {
+  width: 180px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-lg);
+}
+
+.budget-planner__categories-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+  gap: var(--space-lg);
+}
+
+.budget-planner__categories-header h2 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  color: var(--color-text-primary);
+}
+
+.budget-planner__categories-header button {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+}
+
+.budget-planner__categories-header button:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.budget-planner__empty {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  padding: var(--space-2xl);
+}
+
+.budget-planner__row {
+  display: grid;
+  grid-template-columns: 1fr 64px 100px 32px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  align-items: center;
+}
+
+.budget-planner__row input[type='number'] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.budget-planner__remove {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  border-radius: var(--radius-md);
+  padding: 0;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  line-height: 1;
+}
+
+.budget-planner__remove:hover {
+  color: var(--color-critical);
+}
+
+.budget-planner__summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+}
+
+.budget-planner__summary > div {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  transition: all var(--transition-base);
+}
+
+.budget-planner__summary > div:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.budget-planner__summary span {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.budget-planner__summary strong {
+  font-size: var(--font-size-2xl);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.budget-planner__negative strong {
+  color: var(--color-critical);
+}
+
+.budget-planner__summary > div:has(.budget-planner__negative strong) {
+  border-color: var(--color-critical);
+  background: rgba(208, 59, 59, 0.05);
+}
