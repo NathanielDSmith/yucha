@@ -30,7 +30,10 @@ const MAIN_TABS = [
 ] as const
 
 function App() {
-  const [tab, setTab] = useState<TabId>('home')
+  const [tab, setTab] = useState<TabId>(() => {
+    const saved = localStorage.getItem('yucha_current_tab')
+    return (saved as TabId) || 'home'
+  })
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const { currency } = useCurrency()
@@ -38,6 +41,7 @@ function App() {
   const handleTabChange = (newTab: TabId) => {
     console.log('Changing tab from', tab, 'to', newTab)
     setTab(newTab)
+    localStorage.setItem('yucha_current_tab', newTab)
   }
 
   useEffect(() => {

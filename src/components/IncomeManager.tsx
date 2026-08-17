@@ -3,6 +3,7 @@ import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { calculateTotalMonthlyIncome, calculateIncomeRange, type IncomeSource, type IncomeType, type IncomeFrequency } from '../lib/income'
+import { DayOfMonthPicker } from './DayOfMonthPicker'
 import './IncomeManager.css'
 
 const INCOME_TYPES: Record<IncomeType, string> = {
@@ -17,11 +18,11 @@ const FREQUENCIES: IncomeFrequency[] = ['weekly', 'biweekly', 'monthly', 'yearly
 export function IncomeManager() {
   const [sources, setSources] = useState<IncomeSource[]>([])
   const [name, setName] = useState('')
-  const [type, setType] = useState<IncomeType>('job')
+  const [type, setType] = useState<IncomeType | ''>('')
   const [amount, setAmount] = useState('')
   const [minAmount, setMinAmount] = useState('')
   const [maxAmount, setMaxAmount] = useState('')
-  const [frequency, setFrequency] = useState<IncomeFrequency>('monthly')
+  const [frequency, setFrequency] = useState<IncomeFrequency | ''>('')
   const [dayOfMonth, setDayOfMonth] = useState('1')
   const [isVariable, setIsVariable] = useState(false)
   const { currency } = useCurrencyContext()
@@ -41,7 +42,14 @@ export function IncomeManager() {
     const parsedMin = minAmount ? Number(minAmount) : undefined
     const parsedMax = maxAmount ? Number(maxAmount) : undefined
 
-    if (!name.trim() || !parsedAmount || parsedAmount <= 0) return
+    if (!name.trim() || !type || !frequency) return
+
+    // Validate amount based on variable income setting
+    if (isVariable) {
+      if (!parsedMin || !parsedMax || parsedMin <= 0 || parsedMax <= 0) return
+    } else {
+      if (!parsedAmount || parsedAmount <= 0) return
+    }
 
     const source: IncomeSource = {
       id: crypto.randomUUID(),
@@ -59,9 +67,11 @@ export function IncomeManager() {
 
     await db.incomeSources.add(source)
     setName('')
+    setType('')
     setAmount('')
     setMinAmount('')
     setMaxAmount('')
+    setFrequency('')
     setIsVariable(false)
     await refresh()
   }
@@ -107,9 +117,12 @@ export function IncomeManager() {
 
         <select
           value={type}
-          onChange={(e) => setType(e.target.value as IncomeType)}
+          onChange={(e) => setType(e.target.value as IncomeType | '')}
           className="income-manager__select"
         >
+          <option value="" disabled hidden>
+            Job type
+          </option>
           {Object.entries(INCOME_TYPES).map(([key, label]) => (
             <option key={key} value={key}>
               {label}
@@ -119,9 +132,12 @@ export function IncomeManager() {
 
         <select
           value={frequency}
-          onChange={(e) => setFrequency(e.target.value as IncomeFrequency)}
+          onChange={(e) => setFrequency(e.target.value as IncomeFrequency | '')}
           className="income-manager__select"
         >
+          <option value="" disabled hidden>
+            Frequency
+          </option>
           {FREQUENCIES.map((freq) => (
             <option key={freq} value={freq}>
               {freq.charAt(0).toUpperCase() + freq.slice(1)}
@@ -130,14 +146,9 @@ export function IncomeManager() {
         </select>
 
         {frequency === 'monthly' && (
-          <input
-            type="number"
-            min="1"
-            max="31"
-            placeholder="Day of month"
-            value={dayOfMonth}
-            onChange={(e) => setDayOfMonth(e.target.value)}
-            className="income-manager__input"
+          <DayOfMonthPicker
+            value={Number(dayOfMonth)}
+            onChange={(day) => setDayOfMonth(String(day))}
           />
         )}
 

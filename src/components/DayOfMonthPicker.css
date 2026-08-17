@@ -1,0 +1,108 @@
+.day-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.day-picker__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.day-picker__container {
+  position: relative;
+}
+
+.day-picker__button {
+  font: var(--font-size-sm) var(--font-family-sans);
+  color: var(--color-text-primary);
+  background: var(--color-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+  width: 100%;
+  min-width: 0;
+}
+
+.day-picker__button:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-1);
+}
+
+.day-picker__button:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-wash);
+}
+
+.day-picker__calendar {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-top: var(--space-sm);
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-xs);
+  z-index: 10;
+  min-width: 280px;
+  box-shadow: var(--shadow-lg);
+}
+
+.day-picker__day {
+  aspect-ratio: 1;
+  background: var(--color-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+}
+
+.day-picker__day:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-wash);
+}
+
+.day-picker__day--selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-weight: var(--font-weight-bold);
+}
+
+.day-picker__day--placeholder {
+  background: var(--color-surface-1);
+  color: var(--color-text-muted);
+  cursor: default;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.day-picker__day--placeholder:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface-1);
+}
+
+.day-picker__day:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
