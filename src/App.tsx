@@ -32,7 +32,7 @@ function App() {
   const { currency } = useCurrency()
 
   const handleTabChange = (newTab: TabId) => {
-    console.log('Navigation triggered:', { from: tab, to: newTab })
+    console.log('Changing tab from', tab, 'to', newTab)
     setTab(newTab)
   }
 
@@ -69,8 +69,8 @@ function App() {
               key={t.id}
               type="button"
               title={t.title}
-              className={tab.startsWith(t.id) ? 'app__tab app__tab--active' : 'app__tab'}
-              onClick={() => handleTabChange(t.id as TabId)}
+              className={tab === t.id ? 'app__tab app__tab--active' : 'app__tab'}
+              onClick={() => handleTabChange(t.id)}
             >
               <Icon name={t.icon} size={20} />
               <span className="app__tab-label">{t.title}</span>
