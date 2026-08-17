@@ -176,3 +176,67 @@
   border-color: var(--color-critical);
   background: rgba(208, 59, 59, 0.05);
 }
+
+.budget-planner__categories {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  transition: all var(--transition-base);
+}
+
+.budget-planner__categories:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.budget-planner__categories-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.budget-planner__category-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  cursor: help;
+}
+
+.budget-planner__category-row[title]:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-wash);
+}
+
+.budget-planner__category-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+}
+
+.budget-planner__category-value {
+  display: flex;
+  gap: var(--space-lg);
+  align-items: center;
+}
+
+.budget-planner__percent {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+  min-width: 50px;
+  text-align: right;
+}
+
+.budget-planner__amount {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 100px;
+  text-align: right;
+}
