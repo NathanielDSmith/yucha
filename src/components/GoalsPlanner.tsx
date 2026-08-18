@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
+import { useNotification } from '../lib/NotificationContext'
 import { GOAL_CATEGORIES, type Goal, type GoalCategory, getGoalProgress, getGoalStatus } from '../lib/goals'
 import './GoalsPlanner.css'
 
@@ -11,7 +12,9 @@ export function GoalsPlanner() {
   const [targetAmount, setTargetAmount] = useState('')
   const [category, setCategory] = useState<GoalCategory>('savings')
   const [targetDate, setTargetDate] = useState('')
+  const [expandedGoalId, setExpandedGoalId] = useState<string | null>(null)
   const { currency } = useCurrencyContext()
+  const { showNotification } = useNotification()
 
   useEffect(() => {
     refresh()
@@ -54,7 +57,16 @@ export function GoalsPlanner() {
   async function updateGoalAmount(id: string, amount: number) {
     const goal = await db.goals.get(id)
     if (goal) {
-      await db.goals.update(id, { currentAmount: Math.max(0, amount) })
+      const newAmount = Math.max(0, amount)
+      const addedAmount = newAmount - goal.currentAmount
+      await db.goals.update(id, { currentAmount: newAmount })
+
+      const progress = Math.round((newAmount / goal.targetAmount) * 100)
+      const message = progress === 100
+        ? `🎉 Goal complete! You reached ${goal.name}!`
+        : `You just added ${formatCurrency(addedAmount, currency)} to ${goal.name}. Progress: ${progress}%`
+
+      showNotification(message, progress === 100 ? 'success' : 'info', 4000)
       await refresh()
     }
   }
@@ -120,14 +132,25 @@ export function GoalsPlanner() {
                     {GOAL_CATEGORIES[goal.category as GoalCategory]}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => deleteGoal(goal.id)}
-                  className="goals-planner__delete"
-                  aria-label={`Delete ${goal.name}`}
-                >
-                  ✕
-                </button>
+                <div className="goals-planner__card-actions">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedGoalId(expandedGoalId === goal.id ? null : goal.id)}
+                    className="goals-planner__add-icon"
+                    aria-label={`Add amount to ${goal.name}`}
+                    title="Add to goal"
+                  >
+                    +
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteGoal(goal.id)}
+                    className="goals-planner__delete"
+                    aria-label={`Delete ${goal.name}`}
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               <div className="goals-planner__progress-container">
@@ -157,42 +180,47 @@ export function GoalsPlanner() {
                 </div>
               </div>
 
-              <div className="goals-planner__amount-input">
-                <label htmlFor={`amount-${goal.id}`}>Add to this goal:</label>
-                <div className="goals-planner__amount-group">
-                  <input
-                    id={`amount-${goal.id}`}
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    inputMode="decimal"
-                    onBlur={(e) => {
-                      const amount = Number(e.target.value)
-                      if (amount > 0) {
-                        updateGoalAmount(goal.id, goal.currentAmount + amount)
-                        e.target.value = ''
-                      }
-                    }}
-                    className="goals-planner__amount-input-field"
-                  />
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      const input = document.querySelector(
-                        `#amount-${goal.id}`,
-                      ) as HTMLInputElement
-                      const amount = Number(input?.value)
-                      if (amount > 0) {
-                        updateGoalAmount(goal.id, goal.currentAmount + amount)
-                        input.value = ''
-                      }
-                    }}
-                    className="goals-planner__add-button"
-                  >
-                    +
-                  </button>
+              {expandedGoalId === goal.id && (
+                <div className="goals-planner__amount-input">
+                  <label htmlFor={`amount-${goal.id}`}>Add to this goal:</label>
+                  <div className="goals-planner__amount-group">
+                    <input
+                      id={`amount-${goal.id}`}
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      inputMode="decimal"
+                      autoFocus
+                      onBlur={(e) => {
+                        const amount = Number(e.target.value)
+                        if (amount > 0) {
+                          updateGoalAmount(goal.id, goal.currentAmount + amount)
+                          e.target.value = ''
+                          setExpandedGoalId(null)
+                        }
+                      }}
+                      className="goals-planner__amount-input-field"
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        const input = document.querySelector(
+                          `#amount-${goal.id}`,
+                        ) as HTMLInputElement
+                        const amount = Number(input?.value)
+                        if (amount > 0) {
+                          updateGoalAmount(goal.id, goal.currentAmount + amount)
+                          input.value = ''
+                          setExpandedGoalId(null)
+                        }
+                      }}
+                      className="goals-planner__add-button"
+                    >
+                      ✓
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )
         })}

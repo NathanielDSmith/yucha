@@ -12,6 +12,8 @@ import { ReviewReminder } from './components/ReviewReminder'
 import { Onboarding } from './components/Onboarding'
 import { CurrencySelector } from './components/CurrencySelector'
 import { Icon } from './components/Icon'
+import { NotificationContainer } from './components/NotificationContainer'
+import { NotificationProvider } from './lib/NotificationContext'
 import { useCurrency } from './lib/useCurrency'
 import { db } from './lib/db'
 import './App.css'
@@ -66,6 +68,7 @@ function App() {
 
   return (
     <main className="app">
+      <NotificationContainer />
       <header className="app__header">
         <h1>Yucha</h1>
         <nav className="app__tabs">
@@ -74,8 +77,8 @@ function App() {
               key={t.id}
               type="button"
               title={t.title}
-              className={tab.startsWith(t.id) ? 'app__tab app__tab--active' : 'app__tab'}
-              onClick={() => handleTabChange(t.id as TabId)}
+              className={tab === t.id ? 'app__tab app__tab--active' : 'app__tab'}
+              onClick={() => handleTabChange(t.id)}
             >
               <Icon name={t.icon} size={20} />
               <span className="app__tab-label">{t.title}</span>
