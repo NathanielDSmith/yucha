@@ -259,3 +259,18 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 600px) {
+  .goals-planner__form {
+    grid-template-columns: 1fr;
+  }
+
+  .goals-planner__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .goals-planner__add-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

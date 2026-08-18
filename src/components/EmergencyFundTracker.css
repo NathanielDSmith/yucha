@@ -245,3 +245,14 @@
     font-size: var(--font-size-3xl);
   }
 }
+
+@media (max-width: 600px) {
+  .emergency-fund__form {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .emergency-fund__button {
+    min-height: 44px;
+  }
+}
