@@ -174,7 +174,7 @@
 
 .budget-planner__summary > div:has(.budget-planner__negative strong) {
   border-color: var(--color-critical);
-  background: rgba(208, 59, 59, 0.05);
+  background: var(--color-critical-wash);
 }
 
 .budget-planner__categories {
