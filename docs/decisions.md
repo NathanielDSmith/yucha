@@ -325,3 +325,99 @@ so onboarding never shows again.
 **UX Benefit**: Solves the "blank dashboard" problem. New users get immediate
 guidance on what they need to do (enter income, set categories) rather than
 staring at empty UI wondering "what now?"
+
+## 2026-08-17 — Priority 2: Calendar View for Recurring Costs
+
+The `RecurringCosts` component now has two views: a card-grid list (original) and a
+calendar view. The calendar (`RecurringCostsCalendar` component) shows:
+
+- Monthly grid (7 columns for days of week, offset for month start)
+- Subscriptions grouped by `startDate` day-of-month (e.g., all charges on the 15th in one cell)
+- On-click details panel showing that day's charges and total
+- Month navigation for browsing past/future months
+
+**Why a calendar view**: Users plan cash flow by "what's due when in the month," not
+by subscription name. A calendar makes that pattern visible. Toggle button lets users
+switch between list (easy add/edit) and calendar (easy planning) views.
+
+**Implementation**: Subscriptions are stored with `startDate` as a full date (`2024-01-15`),
+but the calendar groups them by the day-of-month component, assuming monthly recurrence.
+The calendar regenerates for each month navigation without fetching, since the full list
+is already in state. Counts and totals are calculated per day, with currency formatting
+applied consistently.
+
+## 2026-08-17 — Priority 2: Budget Allocation from Actual Spending
+
+The `BudgetPlanner` was refactored to calculate allocation percentages from actual
+spending data instead of user-input percentages:
+
+1. Load total monthly income from the Income tab using `calculateTotalMonthlyIncome()`
+2. Load spending entries for the current calendar month using `filterByDateRange()`
+3. Group by category using `sumByCategory()`
+4. Calculate percent as `(categoryTotal / income) * 100` for each category
+5. Show fixed categories (Housing, Utilities, Insurance, Subscriptions, Other, Savings)
+6. Categories with $0 spending show 0% with a tooltip "No information input yet..."
+
+**Why this design**: The old approach (user inputs percentages) breaks the moment income
+changes — the percentages stay fixed while dollars should rescale. By computing from actual
+data, the allocation *reflects reality*, not the user's guess. It's also self-updating:
+log more spending under a category, and the allocation percentage grows automatically.
+
+**Data-driven, not prescribed**: The app never tells the user "you should spend 30% on housing."
+It shows what they're actually spending, and leaves the decision to them.
+
+## 2026-08-17 — Priority 2: Income Management Improvements
+
+### Variable Income Support
+
+`IncomeSource` now supports variable income with `minAmount` and `maxAmount` fields:
+- Fixed income: amount is the fixed value
+- Variable income: minAmount/maxAmount bracket the range
+- UI shows a checkbox to toggle; form validation switches based on toggle state
+- `calculateIncomeRange()` returns `{ min, max }` for variable sources
+
+### Day of Month Picker
+
+Added `DayOfMonthPicker` component for selecting payday (1-31):
+- Custom calendar grid (7 columns, compact 1-31 layout)
+- Button shows ordinal number (15th) but grid shows plain numbers (15)
+- Placeholder text "Payday" when unselected, ordinal in button when selected
+- Triggered only when frequency is "monthly" (makes sense only for monthly cadence)
+
+**Why custom?**: HTML `<input type="date">` uses browser locale formatting and can't
+be easily limited to day-of-month only. A custom grid is simpler and lets us show ordinals
+(15th, 22nd) for user clarity while keeping the grid compact with plain numbers.
+
+### Form Placeholders and Validation
+
+All dropdown selects now have disabled placeholder options at the top:
+- Type select: "Job type" placeholder
+- Frequency select: "Frequency" placeholder
+- Income source input already had placeholder text
+
+This makes it clear what each field is for and prevents accidental submissions with
+auto-selected defaults. Initial state for type and frequency is empty string (not a
+default value), so the placeholder displays until the user picks an option. Validation
+requires both to be set before submission.
+
+## 2026-08-17 — Priority 2: Tab Persistence
+
+Added localStorage persistence for the active tab so page refreshes don't jump back to Home:
+
+- `useState` uses a lazy initializer to load `yucha_current_tab` from localStorage on mount
+- `handleTabChange` saves the new tab to localStorage every time it's called
+- Tab state survives page reload, browser restart, etc.
+
+**Why not URL routing?**: Yucha is a single-page app with no server routing. Storing tab state
+in localStorage is simpler than fragmentary routing and works across browser restarts. URL
+fragments could work (e.g., `#/spending`), but localStorage is more persistent and doesn't
+clutter browser history with internal navigation.
+
+## 2026-08-17 — Code Cleanup
+
+Removed debug console.log and console.error statements:
+- Removed navigation debug log in `App.tsx`
+- Replaced error log in `Home.tsx` with a silent catch (metrics fail gracefully)
+
+A portfolio-ready codebase shouldn't ship debug output. Errors that don't need user action
+should silently fail; errors that do need action should show UI feedback, not console logs.

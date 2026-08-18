@@ -60,7 +60,7 @@
 }
 
 .btn--danger:hover:not(:disabled) {
-  background: #b83030;
+  background: var(--color-critical-dark);
 }
 
 .btn--sm {

@@ -240,3 +240,23 @@
     font-size: var(--font-size-sm);
   }
 }
+
+@media (max-width: 600px) {
+  .recurring-costs-calendar__container {
+    grid-template-columns: 1fr;
+  }
+
+  .recurring-costs-calendar__details {
+    position: static;
+    max-height: none;
+    top: auto;
+  }
+
+  .recurring-costs-calendar__day {
+    min-height: 60px;
+  }
+
+  .recurring-costs-calendar__bills-list {
+    max-height: 300px;
+  }
+}

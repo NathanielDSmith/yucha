@@ -39,7 +39,6 @@ function App() {
   const { currency } = useCurrency()
 
   const handleTabChange = (newTab: TabId) => {
-    console.log('Changing tab from', tab, 'to', newTab)
     setTab(newTab)
     localStorage.setItem('yucha_current_tab', newTab)
   }

@@ -56,7 +56,7 @@ export function Home({ onNavigate }: HomeProps) {
         })
       }
     } catch (error) {
-      console.error('Error loading metrics:', error)
+      // Silently fail; metrics will remain empty
     } finally {
       setIsLoading(false)
     }

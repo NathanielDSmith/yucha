@@ -106,3 +106,17 @@
   outline: none;
   box-shadow: 0 0 0 2px var(--color-primary);
 }
+
+@media (max-width: 600px) {
+  .day-picker__calendar {
+    min-width: unset;
+    width: 100%;
+    max-width: 280px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .day-picker__button {
+    width: 100%;
+  }
+}

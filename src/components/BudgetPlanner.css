@@ -174,7 +174,7 @@
 
 .budget-planner__summary > div:has(.budget-planner__negative strong) {
   border-color: var(--color-critical);
-  background: rgba(208, 59, 59, 0.05);
+  background: var(--color-critical-wash);
 }
 
 .budget-planner__categories {
@@ -239,4 +239,20 @@
   font-variant-numeric: tabular-nums;
   min-width: 100px;
   text-align: right;
+}
+
+@media (max-width: 600px) {
+  .budget-planner__category-value {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-sm);
+  }
+
+  .budget-planner__percent {
+    min-width: auto;
+  }
+
+  .budget-planner__amount {
+    min-width: auto;
+  }
 }
