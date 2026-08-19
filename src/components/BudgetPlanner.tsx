@@ -4,6 +4,7 @@ import { formatCurrency } from '../lib/currency'
 import { BUDGET_CONFIG_ID, db } from '../lib/db'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { AllocationBar } from './AllocationBar'
+import { DemoModeToggle } from './DemoModeToggle'
 import './BudgetPlanner.css'
 
 function newCategory(): BudgetCategory {
@@ -68,6 +69,8 @@ export function BudgetPlanner() {
 
   return (
     <div className="budget-planner">
+      <DemoModeToggle />
+
       <section className="budget-planner__income">
         <label htmlFor="income">Monthly income</label>
         <input
