@@ -9,7 +9,9 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "e2e": "cypress open",
+    "e2e:run": "cypress run"
   },
   "dependencies": {
     "autoprefixer": "^10.5.4",
@@ -27,6 +29,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.3.0",
+    "cypress": "^15.21.0",
     "oxlint": "1.10.0",
     "typescript": "~6.0.2",
     "vite": "^6.4.3",

@@ -148,3 +148,15 @@
     gap: var(--space-md);
   }
 }
+
+@media (max-width: 600px) {
+  .spending-log__form {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .spending-log__form button {
+    padding: var(--space-md) var(--space-lg);
+    min-height: 44px;
+  }
+}

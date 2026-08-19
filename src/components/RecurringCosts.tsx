@@ -4,6 +4,10 @@ import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { getCurrency } from '../lib/currencies'
 import { db } from '../lib/db'
+import { useToast } from '../lib/toastStore'
+import { LoadingSpinner } from './LoadingSpinner'
+import { ErrorMessage } from './ErrorMessage'
+import { RecurringCostsCalendar } from './RecurringCostsCalendar'
 import './Subscriptions.css'
 
 const COST_CATEGORIES = {
@@ -21,57 +25,120 @@ function today(): number {
 }
 
 export function RecurringCosts() {
+  const { show: showToast } = useToast()
   const [costs, setCosts] = useState<Subscription[]>([])
   const [name, setName] = useState('')
   const [category, setCategory] = useState<CostCategory>('other')
   const [monthlyAmount, setMonthlyAmount] = useState('')
   const [dayOfMonth, setDayOfMonth] = useState(today())
+  const [showCalendar, setShowCalendar] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const { currency } = useCurrencyContext()
   const currencySymbol = getCurrency(currency)?.symbol || '$'
 
   async function refresh() {
-    const all = await db.subscriptions.toArray()
-    setCosts(all)
+    try {
+      const all = await db.subscriptions.toArray()
+      setCosts(all)
+      setError(null)
+    } catch (err) {
+      setError('Failed to load recurring costs. Please try again.')
+      console.error('Failed to load recurring costs:', err)
+    }
   }
 
   useEffect(() => {
-    refresh()
+    async function load() {
+      try {
+        setLoading(true)
+        setError(null)
+        await refresh()
+      } catch (err) {
+        setError('Failed to load data. Please try again.')
+        console.error('Failed to load recurring costs:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    setValidationError(null)
     const amount = Number(monthlyAmount)
-    if (!name.trim() || !amount || amount <= 0) return
 
-    const dateStr = `2024-01-${String(dayOfMonth).padStart(2, '0')}`
+    if (!name.trim()) {
+      setValidationError('Name is required')
+      return
+    }
+    if (!amount || amount <= 0) {
+      setValidationError('Amount must be greater than 0')
+      return
+    }
 
-    await db.subscriptions.add({
-      id: crypto.randomUUID(),
-      name: name.trim(),
-      category: COST_CATEGORIES[category],
-      monthlyAmount: amount,
-      startDate: dateStr,
-      usageCount: 0,
-    })
-    setName('')
-    setCategory('other')
-    setMonthlyAmount('')
-    setDayOfMonth(today())
-    await refresh()
+    try {
+      setSubmitting(true)
+      const dateStr = `2024-01-${String(dayOfMonth).padStart(2, '0')}`
+
+      await db.subscriptions.add({
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        category: COST_CATEGORIES[category],
+        monthlyAmount: amount,
+        startDate: dateStr,
+        usageCount: 0,
+      })
+      setName('')
+      setCategory('other')
+      setMonthlyAmount('')
+      setDayOfMonth(today())
+      setValidationError(null)
+      showToast('Recurring cost added', 'success')
+      await refresh()
+    } catch (err) {
+      showToast('Failed to add recurring cost. Please try again.', 'error')
+      console.error('Failed to add recurring cost:', err)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   async function logUse(id: string) {
-    await db.transaction('rw', db.subscriptions, async () => {
-      const current = await db.subscriptions.get(id)
-      if (!current) return
-      await db.subscriptions.update(id, { usageCount: current.usageCount + 1 })
-    })
-    await refresh()
+    try {
+      await db.transaction('rw', db.subscriptions, async () => {
+        const current = await db.subscriptions.get(id)
+        if (!current) return
+        await db.subscriptions.update(id, { usageCount: current.usageCount + 1 })
+      })
+      showToast('Usage logged', 'success')
+      await refresh()
+    } catch (err) {
+      showToast('Failed to log usage. Please try again.', 'error')
+      console.error('Failed to log usage:', err)
+    }
   }
 
   async function remove(id: string) {
-    await db.subscriptions.delete(id)
-    await refresh()
+    try {
+      await db.subscriptions.delete(id)
+      showToast('Recurring cost removed', 'success')
+      await refresh()
+    } catch (err) {
+      showToast('Failed to remove cost. Please try again.', 'error')
+      console.error('Failed to remove recurring cost:', err)
+    }
+  }
+
+  if (loading) {
+    return <LoadingSpinner message="Loading recurring costs..." />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} onRetry={refresh} />
   }
 
   return (
@@ -84,12 +151,14 @@ export function RecurringCosts() {
           onChange={(e) => setName(e.target.value)}
           id="recurring-name"
           name="recurring-name"
+          disabled={submitting}
         />
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value as CostCategory)}
           id="recurring-category"
           name="recurring-category"
+          disabled={submitting}
         >
           {Object.entries(COST_CATEGORIES).map(([key, label]) => (
             <option key={key} value={key}>{label}</option>
@@ -104,19 +173,24 @@ export function RecurringCosts() {
           onChange={(e) => setMonthlyAmount(e.target.value)}
           id="recurring-amount"
           name="recurring-amount"
+          disabled={submitting}
         />
         <input
           type="number"
           min="1"
           max="31"
-          placeholder="Day"
+          placeholder="Day (1-31)"
           value={dayOfMonth}
           onChange={(e) => setDayOfMonth(Number(e.target.value))}
           id="recurring-day"
           name="recurring-day"
-          title="Day of month it comes out (1-31)"
+          title="Which day of the month does this charge (1-31)"
+          disabled={submitting}
         />
-        <button type="submit">Add</button>
+        <button type="submit" disabled={submitting}>
+          {submitting ? 'Adding...' : 'Add'}
+        </button>
+        {validationError && <ErrorMessage message={validationError} />}
       </form>
 
       {costs.length === 0 && (
@@ -125,46 +199,54 @@ export function RecurringCosts() {
         </p>
       )}
 
-      <div className="subscriptions__list">
-        {costs.map((cost) => {
-          const paid = totalPaid(cost)
-          const perUse = costPerUse(cost)
-          return (
-            <div className="subscriptions__card" key={cost.id}>
-              <div className="subscriptions__card-header">
-                <div>
-                  <strong>{cost.name}</strong>
-                  <span className="subscriptions__category">{cost.category}</span>
+      {costs.length > 0 && (
+        <>
+          <button
+            type="button"
+            className="subscriptions__calendar-toggle"
+            onClick={() => setShowCalendar(!showCalendar)}
+          >
+            {showCalendar ? '← Back to List' : '📅 View Calendar'}
+          </button>
+
+          {showCalendar ? (
+            <RecurringCostsCalendar />
+          ) : (
+            <div className="subscriptions__list">
+              {costs.map((cost) => {
+              const paid = totalPaid(cost)
+              const perUse = costPerUse(cost)
+              return (
+                <div className="subscriptions__card" key={cost.id}>
+                  <div className="subscriptions__card-header">
+                    <div>
+                      <strong>{cost.name}</strong>
+                      <span className="subscriptions__category">{cost.category}</span>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${cost.name}`}
+                      onClick={() => remove(cost.id)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="subscriptions__stats">
+                    <div>
+                      <span>Monthly</span>
+                      <strong>{formatCurrency(cost.monthlyAmount, currency)}</strong>
+                    </div>
+                    <div>
+                      <span>Annual (12 months)</span>
+                      <strong>{formatCurrency(cost.monthlyAmount * 12, currency)}</strong>
+                    </div>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  aria-label={`Remove ${cost.name}`}
-                  onClick={() => remove(cost.id)}
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="subscriptions__stats">
-                <div>
-                  <span>Monthly</span>
-                  <strong>{formatCurrency(cost.monthlyAmount)}</strong>
-                </div>
-                <div>
-                  <span>Paid to date</span>
-                  <strong>{formatCurrency(paid)}</strong>
-                </div>
-                <div>
-                  <span>Months active</span>
-                  <strong>{cost.usageCount}</strong>
-                </div>
-                <div>
-                  <span>Total cost</span>
-                  <strong>{formatCurrency(paid)}</strong>
-                </div>
-              </div>
-            </div>
-          )
-        })}</div>
+              )
+            })}</div>
+          )}
+        </>
+      )}
     </div>
   )
 }

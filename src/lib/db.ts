@@ -4,6 +4,7 @@ import type { SpendingEntry } from './spending'
 import type { Subscription } from './subscriptions'
 import type { Goal } from './goals'
 import type { Account } from './accounts'
+import type { IncomeSource } from './income'
 import type { CurrencyCode } from './currencies'
 import { DEFAULT_CURRENCY } from './currencies'
 
@@ -34,6 +35,7 @@ class YuchaDB extends Dexie {
   appSettings!: Table<AppSettings, number>
   goals!: Table<Goal, string>
   accounts!: Table<Account, string>
+  incomeSources!: Table<IncomeSource, string>
 
   constructor() {
     super('yucha')
@@ -60,6 +62,15 @@ class YuchaDB extends Dexie {
       appSettings: 'id',
       goals: 'id, priority',
       accounts: 'id, type',
+    })
+    this.version(5).stores({
+      budgetConfig: 'id',
+      spendingEntries: 'id, date, category',
+      subscriptions: 'id, category',
+      appSettings: 'id',
+      goals: 'id, priority',
+      accounts: 'id, type',
+      incomeSources: 'id, type, isActive',
     })
   }
 }
