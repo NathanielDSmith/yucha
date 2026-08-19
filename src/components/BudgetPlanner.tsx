@@ -13,6 +13,7 @@ import './BudgetPlanner.css'
 export function BudgetPlanner() {
   const [income, setIncome] = useState(0)
   const [spendingByCategory, setSpendingByCategory] = useState<Record<string, number>>({})
+  const [recurringCosts, setRecurringCosts] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isExpanded, setIsExpanded] = useState(true)
@@ -37,6 +38,10 @@ export function BudgetPlanner() {
         byCategory[cat.category] = cat.total
       })
       setSpendingByCategory(byCategory)
+
+      const subscriptions = await db.subscriptions.toArray()
+      const totalRecurring = subscriptions.reduce((sum, s) => sum + s.monthlyAmount, 0)
+      setRecurringCosts(totalRecurring)
     } catch (err) {
       setError('Failed to load budget data. Please try again.')
       console.error('Failed to load budget data:', err)
@@ -52,10 +57,10 @@ export function BudgetPlanner() {
 
   // Calculate allocation based on spending data
   const budget = useMemo(() => {
-    // Get unique categories from actual spending, sorted alphabetically
-    const uniqueCategories = Object.keys(spendingByCategory).sort()
+    // Get unique categories from actual spending
+    const uniqueCategories = Object.keys(spendingByCategory)
 
-    if (income === 0 || uniqueCategories.length === 0) {
+    if (income === 0) {
       return {
         income: 0,
         totalAllocated: 0,
@@ -64,7 +69,7 @@ export function BudgetPlanner() {
       }
     }
 
-    const categories = uniqueCategories.map((name) => {
+    let categories = uniqueCategories.map((name) => {
       const spending = spendingByCategory[name] || 0
       const percent = (spending / income) * 100
       return {
@@ -76,7 +81,22 @@ export function BudgetPlanner() {
       }
     })
 
-    const totalAllocated = Object.values(spendingByCategory).reduce((sum, val) => sum + val, 0)
+    // Add recurring costs as a category if there are any
+    if (recurringCosts > 0) {
+      const percent = (recurringCosts / income) * 100
+      categories.push({
+        id: 'recurring',
+        name: 'Recurring Costs',
+        type: 'percentage' as const,
+        percent: Math.round(percent * 10) / 10,
+        amount: recurringCosts,
+      })
+    }
+
+    // Sort by amount descending so largest expenses appear first
+    categories.sort((a, b) => b.amount - a.amount)
+
+    const totalAllocated = Object.values(spendingByCategory).reduce((sum, val) => sum + val, 0) + recurringCosts
 
     return {
       income,
@@ -84,7 +104,7 @@ export function BudgetPlanner() {
       remaining: income - totalAllocated,
       categories,
     }
-  }, [income, spendingByCategory])
+  }, [income, spendingByCategory, recurringCosts])
 
   if (loading) {
     return <LoadingSpinner message="Loading budget..." />
@@ -94,7 +114,7 @@ export function BudgetPlanner() {
     return <ErrorMessage message={error} onRetry={() => loadData()} />
   }
 
-  const MAX_VISIBLE = 5
+  const MAX_VISIBLE = 2
   const hasMany = budget.categories.length > MAX_VISIBLE
   const visibleCategories = isExpanded ? budget.categories : budget.categories.slice(0, MAX_VISIBLE)
 
