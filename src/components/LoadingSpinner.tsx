@@ -9,6 +9,8 @@ export function LoadingSpinner({ message = 'Loading...' }: { message?: string })
         gap: 'var(--space-md)',
         padding: 'var(--space-3xl) var(--space-lg)',
       }}
+      role="status"
+      aria-live="polite"
     >
       <div
         style={{
@@ -19,6 +21,7 @@ export function LoadingSpinner({ message = 'Loading...' }: { message?: string })
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }}
+        aria-hidden="true"
       />
       <p
         style={{

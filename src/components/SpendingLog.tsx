@@ -118,7 +118,7 @@ export function SpendingLog() {
 
   return (
     <div className="spending-log">
-      <form className="spending-log__form" onSubmit={handleSubmit}>
+      <form className="spending-log__form" onSubmit={handleSubmit} noValidate>
         <input
           type="number"
           inputMode="decimal"
@@ -128,6 +128,8 @@ export function SpendingLog() {
           onChange={(e) => setAmount(e.target.value)}
           autoFocus
           disabled={submitting}
+          aria-label="Spending amount"
+          aria-describedby={validationError ? 'validation-error' : undefined}
         />
         <input
           type="text"
@@ -136,6 +138,8 @@ export function SpendingLog() {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           disabled={submitting}
+          aria-label="Spending category"
+          aria-describedby={validationError ? 'validation-error' : undefined}
         />
         <datalist id="spending-category-options">
           {categoryOptions.map((name) => (
@@ -147,6 +151,7 @@ export function SpendingLog() {
           value={date}
           onChange={(e) => setDate(e.target.value)}
           disabled={submitting}
+          aria-label="Spending date"
         />
         <input
           type="text"
@@ -154,6 +159,7 @@ export function SpendingLog() {
           value={note}
           onChange={(e) => setNote(e.target.value)}
           disabled={submitting}
+          aria-label="Spending note (optional)"
         />
         <button type="submit" disabled={submitting}>
           {submitting ? 'Saving...' : 'Log spend'}

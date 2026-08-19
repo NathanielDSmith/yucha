@@ -9,12 +9,13 @@ export function ToastContainer() {
   const { toasts, remove } = context
 
   return (
-    <div className="toast-container">
+    <div className="toast-container" aria-live="polite" aria-atomic="true">
       {toasts.map((toast) => (
         <div
           key={toast.id}
           className={`toast toast--${toast.type}`}
           role="alert"
+          aria-live="assertive"
         >
           <div className="toast__content">
             <span className="toast__message">{toast.message}</span>
@@ -23,7 +24,7 @@ export function ToastContainer() {
               onClick={() => remove(toast.id)}
               aria-label="Dismiss notification"
             >
-              ✕
+              <span aria-hidden="true">✕</span>
             </button>
           </div>
         </div>

@@ -12,6 +12,8 @@ export function EmptyState({ message }: { message: string }) {
         border: '1px dashed var(--color-border)',
         borderRadius: 'var(--radius-lg)',
       }}
+      role="status"
+      aria-live="polite"
     >
       <p
         style={{

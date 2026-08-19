@@ -7,6 +7,7 @@ export function ErrorMessage({
 }) {
   return (
     <div
+      role="alert"
       style={{
         display: 'flex',
         alignItems: 'center',
