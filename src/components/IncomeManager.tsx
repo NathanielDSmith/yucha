@@ -3,6 +3,9 @@ import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { calculateTotalMonthlyIncome, calculateIncomeRange, type IncomeSource, type IncomeType, type IncomeFrequency } from '../lib/income'
+import { useToast } from '../lib/toastStore'
+import { LoadingSpinner } from './LoadingSpinner'
+import { ErrorMessage } from './ErrorMessage'
 import { DayOfMonthPicker } from './DayOfMonthPicker'
 import './IncomeManager.css'
 
@@ -16,6 +19,7 @@ const INCOME_TYPES: Record<IncomeType, string> = {
 const FREQUENCIES: IncomeFrequency[] = ['weekly', 'biweekly', 'monthly', 'yearly']
 
 export function IncomeManager() {
+  const { show: showToast } = useToast()
   const [sources, setSources] = useState<IncomeSource[]>([])
   const [name, setName] = useState('')
   const [type, setType] = useState<IncomeType | ''>('')
@@ -25,65 +29,135 @@ export function IncomeManager() {
   const [frequency, setFrequency] = useState<IncomeFrequency | ''>('')
   const [dayOfMonth, setDayOfMonth] = useState('1')
   const [isVariable, setIsVariable] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const { currency } = useCurrencyContext()
 
   async function refresh() {
-    const all = await db.incomeSources.toArray()
-    setSources(all)
+    try {
+      const all = await db.incomeSources.toArray()
+      setSources(all)
+      setError(null)
+    } catch (err) {
+      setError('Failed to load income sources. Please try again.')
+      console.error('Failed to load income sources:', err)
+    }
   }
 
   useEffect(() => {
-    refresh()
+    async function load() {
+      try {
+        setLoading(true)
+        setError(null)
+        await refresh()
+      } catch (err) {
+        setError('Failed to load data. Please try again.')
+        console.error('Failed to load income data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    setValidationError(null)
     const parsedAmount = Number(amount)
     const parsedMin = minAmount ? Number(minAmount) : undefined
     const parsedMax = maxAmount ? Number(maxAmount) : undefined
 
-    if (!name.trim() || !type || !frequency) return
+    if (!name.trim()) {
+      setValidationError('Income source name is required')
+      return
+    }
+    if (!type) {
+      setValidationError('Job type is required')
+      return
+    }
+    if (!frequency) {
+      setValidationError('Frequency is required')
+      return
+    }
 
     // Validate amount based on variable income setting
     if (isVariable) {
-      if (!parsedMin || !parsedMax || parsedMin <= 0 || parsedMax <= 0) return
+      if (!parsedMin || !parsedMax || parsedMin <= 0 || parsedMax <= 0) {
+        setValidationError('Min and max amounts must be greater than 0')
+        return
+      }
     } else {
-      if (!parsedAmount || parsedAmount <= 0) return
+      if (!parsedAmount || parsedAmount <= 0) {
+        setValidationError('Amount must be greater than 0')
+        return
+      }
     }
 
-    const source: IncomeSource = {
-      id: crypto.randomUUID(),
-      name: name.trim(),
-      type,
-      amount: parsedAmount,
-      minAmount: isVariable ? parsedMin : undefined,
-      maxAmount: isVariable ? parsedMax : undefined,
-      frequency,
-      dayOfMonth: frequency === 'monthly' ? Number(dayOfMonth) : undefined,
-      startDate: new Date().toISOString().split('T')[0],
-      isActive: true,
-      createdAt: new Date().toISOString(),
-    }
+    try {
+      setSubmitting(true)
+      const source: IncomeSource = {
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        type,
+        amount: parsedAmount,
+        minAmount: isVariable ? parsedMin : undefined,
+        maxAmount: isVariable ? parsedMax : undefined,
+        frequency,
+        dayOfMonth: frequency === 'monthly' ? Number(dayOfMonth) : undefined,
+        startDate: new Date().toISOString().split('T')[0],
+        isActive: true,
+        createdAt: new Date().toISOString(),
+      }
 
-    await db.incomeSources.add(source)
-    setName('')
-    setType('')
-    setAmount('')
-    setMinAmount('')
-    setMaxAmount('')
-    setFrequency('')
-    setIsVariable(false)
-    await refresh()
+      await db.incomeSources.add(source)
+      setName('')
+      setType('')
+      setAmount('')
+      setMinAmount('')
+      setMaxAmount('')
+      setFrequency('')
+      setIsVariable(false)
+      setValidationError(null)
+      showToast('Income source added', 'success')
+      await refresh()
+    } catch (err) {
+      showToast('Failed to add income source. Please try again.', 'error')
+      console.error('Failed to add income source:', err)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   async function toggleActive(id: string, currentActive: boolean) {
-    await db.incomeSources.update(id, { isActive: !currentActive })
-    await refresh()
+    try {
+      await db.incomeSources.update(id, { isActive: !currentActive })
+      showToast('Income source updated', 'success')
+      await refresh()
+    } catch (err) {
+      showToast('Failed to update income source. Please try again.', 'error')
+      console.error('Failed to toggle income source:', err)
+    }
   }
 
   async function removeSource(id: string) {
-    await db.incomeSources.delete(id)
-    await refresh()
+    try {
+      await db.incomeSources.delete(id)
+      showToast('Income source removed', 'success')
+      await refresh()
+    } catch (err) {
+      showToast('Failed to remove income source. Please try again.', 'error')
+      console.error('Failed to remove income source:', err)
+    }
+  }
+
+  if (loading) {
+    return <LoadingSpinner message="Loading income sources..." />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} onRetry={refresh} />
   }
 
   const totalMonthly = calculateTotalMonthlyIncome(sources)
@@ -113,12 +187,14 @@ export function IncomeManager() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="income-manager__input"
+          disabled={submitting}
         />
 
         <select
           value={type}
           onChange={(e) => setType(e.target.value as IncomeType | '')}
           className="income-manager__select"
+          disabled={submitting}
         >
           <option value="" disabled hidden>
             Job type
@@ -134,6 +210,7 @@ export function IncomeManager() {
           value={frequency}
           onChange={(e) => setFrequency(e.target.value as IncomeFrequency | '')}
           className="income-manager__select"
+          disabled={submitting}
         >
           <option value="" disabled hidden>
             Frequency
@@ -158,6 +235,7 @@ export function IncomeManager() {
               type="checkbox"
               checked={isVariable}
               onChange={(e) => setIsVariable(e.target.checked)}
+              disabled={submitting}
             />
             Variable income
           </label>
@@ -171,6 +249,7 @@ export function IncomeManager() {
                 value={minAmount}
                 onChange={(e) => setMinAmount(e.target.value)}
                 className="income-manager__input"
+                disabled={submitting}
               />
               <input
                 type="number"
@@ -179,6 +258,7 @@ export function IncomeManager() {
                 value={maxAmount}
                 onChange={(e) => setMaxAmount(e.target.value)}
                 className="income-manager__input"
+                disabled={submitting}
               />
             </>
           ) : (
@@ -189,13 +269,15 @@ export function IncomeManager() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="income-manager__input"
+              disabled={submitting}
             />
           )}
         </div>
 
-        <button type="submit" className="income-manager__button">
-          Add Income
+        <button type="submit" className="income-manager__button" disabled={submitting}>
+          {submitting ? 'Adding...' : 'Add Income'}
         </button>
+        {validationError && <ErrorMessage message={validationError} />}
       </form>
 
       {sources.length === 0 && (

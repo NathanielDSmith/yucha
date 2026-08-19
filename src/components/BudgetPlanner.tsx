@@ -5,6 +5,8 @@ import { formatCurrency } from '../lib/currency'
 import { db, type BudgetConfig } from '../lib/db'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { AllocationBar } from './AllocationBar'
+import { LoadingSpinner } from './LoadingSpinner'
+import { ErrorMessage } from './ErrorMessage'
 import type { SpendingEntry } from '../lib/spending'
 import './BudgetPlanner.css'
 
@@ -20,12 +22,14 @@ const FIXED_CATEGORIES = [
 export function BudgetPlanner() {
   const [income, setIncome] = useState(0)
   const [spendingByCategory, setSpendingByCategory] = useState<Record<string, number>>({})
-  const [loaded, setLoaded] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { currency } = useCurrencyContext()
 
-  // Load income sources and spending entries on mount
-  useEffect(() => {
-    async function loadData() {
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
       const incomeSources = await db.incomeSources.toArray()
       const totalIncome = calculateTotalMonthlyIncome(incomeSources)
       setIncome(totalIncome)
@@ -41,8 +45,16 @@ export function BudgetPlanner() {
         byCategory[cat.category] = cat.total
       })
       setSpendingByCategory(byCategory)
-      setLoaded(true)
+    } catch (err) {
+      setError('Failed to load budget data. Please try again.')
+      console.error('Failed to load budget data:', err)
+    } finally {
+      setLoading(false)
     }
+  }
+
+  // Load income sources and spending entries on mount
+  useEffect(() => {
     loadData()
   }, [])
 
@@ -85,7 +97,13 @@ export function BudgetPlanner() {
     }
   }, [income, spendingByCategory])
 
-  if (!loaded) return null
+  if (loading) {
+    return <LoadingSpinner message="Loading budget..." />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} onRetry={() => loadData()} />
+  }
 
   return (
     <div className="budget-planner">

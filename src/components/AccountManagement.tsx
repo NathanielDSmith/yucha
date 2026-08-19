@@ -2,53 +2,112 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
+import { useToast } from '../lib/toastStore'
+import { LoadingSpinner } from './LoadingSpinner'
+import { ErrorMessage } from './ErrorMessage'
 import { ACCOUNT_TYPES, type AccountType } from '../lib/accounts'
 import { getAllAccountMetrics } from '../lib/accountmetrics'
 import './AccountManagement.css'
 
 export function AccountManagement() {
+  const { show: showToast } = useToast()
   const [accounts, setAccounts] = useState([])
   const [spendingEntries, setSpendingEntries] = useState([])
   const [name, setName] = useState('')
   const [balance, setBalance] = useState('')
   const [type, setType] = useState<AccountType>('savings')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const { currency } = useCurrencyContext()
 
   useEffect(() => {
-    loadData()
+    async function load() {
+      try {
+        setLoading(true)
+        setError(null)
+        await loadData()
+      } catch (err) {
+        setError('Failed to load accounts. Please try again.')
+        console.error('Failed to load accounts:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [])
 
   async function loadData() {
-    const allAccounts = await db.accounts.toArray()
-    const allSpending = await db.spendingEntries.toArray()
-    setAccounts(allAccounts)
-    setSpendingEntries(allSpending)
+    try {
+      const allAccounts = await db.accounts.toArray()
+      const allSpending = await db.spendingEntries.toArray()
+      setAccounts(allAccounts)
+      setSpendingEntries(allSpending)
+      setError(null)
+    } catch (err) {
+      setError('Failed to load accounts. Please try again.')
+      console.error('Failed to load accounts:', err)
+    }
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    setValidationError(null)
     const amount = Number(balance)
-    if (!name.trim() || !amount || amount < 0) return
 
-    await db.accounts.add({
-      id: crypto.randomUUID(),
-      name: name.trim(),
-      balance: amount,
-      type,
-      currency,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    })
+    if (!name.trim()) {
+      setValidationError('Account name is required')
+      return
+    }
+    if (!amount || amount < 0) {
+      setValidationError('Balance must be 0 or greater')
+      return
+    }
 
-    setName('')
-    setBalance('')
-    setType('savings')
-    await loadData()
+    try {
+      setSubmitting(true)
+      await db.accounts.add({
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        balance: amount,
+        type,
+        currency,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+
+      setName('')
+      setBalance('')
+      setType('savings')
+      setValidationError(null)
+      showToast('Account added', 'success')
+      await loadData()
+    } catch (err) {
+      showToast('Failed to add account. Please try again.', 'error')
+      console.error('Failed to add account:', err)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   async function deleteAccount(id: string) {
-    await db.accounts.delete(id)
-    await loadData()
+    try {
+      await db.accounts.delete(id)
+      showToast('Account deleted', 'success')
+      await loadData()
+    } catch (err) {
+      showToast('Failed to delete account. Please try again.', 'error')
+      console.error('Failed to delete account:', err)
+    }
+  }
+
+  if (loading) {
+    return <LoadingSpinner message="Loading accounts..." />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} onRetry={loadData} />
   }
 
   const metrics = getAllAccountMetrics(accounts, spendingEntries)
@@ -90,6 +149,7 @@ export function AccountManagement() {
           className="account-management__input"
           id="account-name"
           name="account-name"
+          disabled={submitting}
         />
         <input
           type="number"
@@ -101,6 +161,7 @@ export function AccountManagement() {
           className="account-management__input"
           id="account-balance"
           name="account-balance"
+          disabled={submitting}
         />
         <select
           value={type}
@@ -108,6 +169,7 @@ export function AccountManagement() {
           className="account-management__select"
           id="account-type"
           name="account-type"
+          disabled={submitting}
         >
           {Object.entries(ACCOUNT_TYPES).map(([key, label]) => (
             <option key={key} value={key}>
@@ -115,9 +177,10 @@ export function AccountManagement() {
             </option>
           ))}
         </select>
-        <button type="submit" className="account-management__button">
-          Add Account
+        <button type="submit" className="account-management__button" disabled={submitting}>
+          {submitting ? 'Adding...' : 'Add Account'}
         </button>
+        {validationError && <ErrorMessage message={validationError} />}
       </form>
 
       {accounts.length === 0 ? (

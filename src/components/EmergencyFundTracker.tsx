@@ -2,36 +2,85 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
+import { useToast } from '../lib/toastStore'
+import { LoadingSpinner } from './LoadingSpinner'
+import { ErrorMessage } from './ErrorMessage'
 import { getEmergencyFundMetrics, RECOMMENDED_MONTHS, MINIMUM_MONTHS } from '../lib/emergency'
 import './EmergencyFundTracker.css'
 
 export function EmergencyFundTracker() {
+  const { show: showToast } = useToast()
   const [emergencyFundGoal, setEmergencyFundGoal] = useState<number | null>(null)
   const [spendingEntries, setSpendingEntries] = useState([])
   const [newGoal, setNewGoal] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const { currency } = useCurrencyContext()
 
   useEffect(() => {
-    loadData()
+    async function load() {
+      try {
+        setLoading(true)
+        setError(null)
+        await loadData()
+      } catch (err) {
+        setError('Failed to load emergency fund data. Please try again.')
+        console.error('Failed to load emergency fund:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [])
 
   async function loadData() {
-    const entries = await db.spendingEntries.toArray()
-    setSpendingEntries(entries)
+    try {
+      const entries = await db.spendingEntries.toArray()
+      setSpendingEntries(entries)
 
-    const settings = await db.appSettings.get(1)
-    setEmergencyFundGoal(settings?.emergencyFundGoal ?? null)
+      const settings = await db.appSettings.get(1)
+      setEmergencyFundGoal(settings?.emergencyFundGoal ?? null)
+      setError(null)
+    } catch (err) {
+      setError('Failed to load emergency fund data. Please try again.')
+      console.error('Failed to load emergency fund:', err)
+    }
   }
 
   async function handleSetGoal(e: FormEvent) {
     e.preventDefault()
+    setValidationError(null)
     const amount = Number(newGoal)
-    if (!amount || amount <= 0) return
 
-    await db.appSettings.update(1, { emergencyFundGoal: amount })
-    setEmergencyFundGoal(amount)
-    setNewGoal('')
-    await loadData()
+    if (!amount || amount <= 0) {
+      setValidationError('Emergency fund goal must be greater than 0')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      await db.appSettings.update(1, { emergencyFundGoal: amount })
+      setEmergencyFundGoal(amount)
+      setNewGoal('')
+      setValidationError(null)
+      showToast('Emergency fund goal updated', 'success')
+      await loadData()
+    } catch (err) {
+      showToast('Failed to update goal. Please try again.', 'error')
+      console.error('Failed to set emergency fund goal:', err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (loading) {
+    return <LoadingSpinner message="Loading emergency fund..." />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} onRetry={loadData} />
   }
 
   const metrics = emergencyFundGoal ? getEmergencyFundMetrics(emergencyFundGoal, spendingEntries) : null
@@ -119,6 +168,7 @@ export function EmergencyFundTracker() {
           className="emergency-fund__input"
           id="emergency-fund-goal"
           name="emergency-fund-goal"
+          disabled={submitting}
         />
         <select
           value={RECOMMENDED_MONTHS}
@@ -129,9 +179,10 @@ export function EmergencyFundTracker() {
         >
           <option>{RECOMMENDED_MONTHS} months goal</option>
         </select>
-        <button type="submit" className="emergency-fund__button">
-          {emergencyFundGoal ? 'Update' : 'Set'} Goal
+        <button type="submit" className="emergency-fund__button" disabled={submitting}>
+          {submitting ? 'Saving...' : emergencyFundGoal ? 'Update' : 'Set'} Goal
         </button>
+        {validationError && <ErrorMessage message={validationError} />}
       </form>
 
       <div className="emergency-fund__info">
