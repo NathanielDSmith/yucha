@@ -12,6 +12,9 @@ import { ReviewReminder } from './components/ReviewReminder'
 import { Onboarding } from './components/Onboarding'
 import { CurrencySelector } from './components/CurrencySelector'
 import { Icon } from './components/Icon'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { ToastContainer } from './components/Toast'
+import { ToastProvider } from './lib/toastStore'
 import { useCurrency } from './lib/useCurrency'
 import { db } from './lib/db'
 import './App.css'
@@ -27,7 +30,7 @@ const MAIN_TABS = [
   { id: 'settings-budget' as const, icon: 'settings' as const, title: 'Settings' },
 ] as const
 
-function App() {
+function AppContent() {
   const [tab, setTab] = useState<TabId>(() => {
     const saved = localStorage.getItem('yucha_current_tab')
     return (saved as TabId) || 'home'
@@ -98,6 +101,17 @@ function App() {
         {tab === 'settings-accounts' && <AccountManagement />}
       </div>
     </main>
+  )
+}
+
+function App() {
+  return (
+    <ToastProvider>
+      <ErrorBoundary>
+        <AppContent />
+        <ToastContainer />
+      </ErrorBoundary>
+    </ToastProvider>
   )
 }
 

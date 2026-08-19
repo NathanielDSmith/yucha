@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
+import { useToast } from '../lib/toastStore'
+import { LoadingSpinner } from './LoadingSpinner'
+import { ErrorMessage } from './ErrorMessage'
 import './Onboarding.css'
 
 interface OnboardingProps {
@@ -15,9 +18,13 @@ const DEFAULT_CATEGORIES = [
 ]
 
 export function Onboarding({ onComplete }: OnboardingProps) {
+  const { show: showToast } = useToast()
   const [slide, setSlide] = useState(0)
   const [income, setIncome] = useState('')
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   useEffect(() => {
     function handleEscape(e: KeyboardEvent) {
@@ -34,10 +41,17 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   }
 
   async function handleNext() {
+    setError(null)
+    setValidationError(null)
+
     if (slide === 0) {
       setSlide(1)
     } else if (slide === 1) {
-      if (!income || Number(income) <= 0) return
+      const parsedIncome = Number(income)
+      if (!income || !parsedIncome || parsedIncome <= 0) {
+        setValidationError('Income must be greater than 0')
+        return
+      }
       setSlide(2)
     } else if (slide === 2) {
       await saveAndComplete()
@@ -45,36 +59,55 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   }
 
   async function saveAndComplete() {
+    setError(null)
+    setValidationError(null)
     const parsedIncome = Number(income)
-    if (!parsedIncome || parsedIncome <= 0) return
 
-    // Save budget config in BudgetPlanner's expected format
-    await db.budgetConfig.put({
-      id: 1,
-      income: parsedIncome,
-      categories: categories
-        .filter((c) => c.name.trim())
-        .map((c) => ({
-          id: crypto.randomUUID(),
-          name: c.name.trim(),
-          type: c.type,
-          ...(c.type === 'percentage'
-            ? { percent: Number(c.amount) || 0 }
-            : { amount: Number(c.amount) || 0 }),
-        })),
-    })
+    if (!parsedIncome || parsedIncome <= 0) {
+      setValidationError('Income must be greater than 0')
+      return
+    }
 
-    await markComplete()
+    try {
+      setLoading(true)
+      // Save budget config in BudgetPlanner's expected format
+      await db.budgetConfig.put({
+        id: 1,
+        income: parsedIncome,
+        categories: categories
+          .filter((c) => c.name.trim())
+          .map((c) => ({
+            id: crypto.randomUUID(),
+            name: c.name.trim(),
+            type: c.type,
+            ...(c.type === 'percentage'
+              ? { percent: Number(c.amount) || 0 }
+              : { amount: Number(c.amount) || 0 }),
+          })),
+      })
+
+      await markComplete()
+      showToast('Onboarding complete! Welcome to Yucha', 'success')
+    } catch (err) {
+      setError('Failed to save settings. Please try again.')
+      showToast('Failed to save onboarding settings', 'error')
+      console.error('Failed to save onboarding:', err)
+      setLoading(false)
+    }
   }
 
   async function markComplete() {
-    const settings = await db.appSettings.get(1)
-    await db.appSettings.put({
-      id: 1,
-      lastReviewedAt: settings?.lastReviewedAt || new Date(),
-      onboardingComplete: true,
-    })
-    onComplete()
+    try {
+      const settings = await db.appSettings.get(1)
+      await db.appSettings.put({
+        id: 1,
+        lastReviewedAt: settings?.lastReviewedAt || new Date(),
+        onboardingComplete: true,
+      })
+      onComplete()
+    } catch (err) {
+      throw err
+    }
   }
 
   function addCategory() {
@@ -114,6 +147,27 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   const projectedAllocated =
     fixedTotal +
     (projectedIncome * Math.max(0, Math.min(100, totalPercentage))) / 100
+
+  if (loading) {
+    return <LoadingSpinner message="Setting up your budget..." />
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          padding: 'var(--space-lg)',
+        }}
+      >
+        <ErrorMessage message={error} onRetry={() => saveAndComplete()} />
+      </div>
+    )
+  }
 
   return (
     <div className="onboarding">
@@ -202,6 +256,8 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                   />
                 </div>
               </div>
+
+              {validationError && <ErrorMessage message={validationError} />}
 
               {income && (
                 <div className="onboarding__preview">
@@ -322,6 +378,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                 type="button"
                 className="onboarding__button onboarding__button--secondary"
                 onClick={() => setSlide(1)}
+                disabled={loading}
               >
                 Back
               </button>
@@ -329,8 +386,9 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                 type="button"
                 className="onboarding__button onboarding__button--primary"
                 onClick={handleNext}
+                disabled={loading}
               >
-                Done
+                {loading ? 'Saving...' : 'Done'}
               </button>
             </div>
           </div>
