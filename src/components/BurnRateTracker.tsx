@@ -2,36 +2,85 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
+import { useToast } from '../lib/toastStore'
+import { LoadingSpinner } from './LoadingSpinner'
+import { ErrorMessage } from './ErrorMessage'
 import { calculateBurnRateMetrics, formatRunway } from '../lib/burnrate'
 import './BurnRateTracker.css'
 
 export function BurnRateTracker() {
+  const { show: showToast } = useToast()
   const [spendingEntries, setSpendingEntries] = useState([])
   const [currentBalance, setCurrentBalance] = useState<number | null>(null)
   const [newBalance, setNewBalance] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const { currency } = useCurrencyContext()
 
   useEffect(() => {
-    loadData()
+    async function load() {
+      try {
+        setLoading(true)
+        setError(null)
+        await loadData()
+      } catch (err) {
+        setError('Failed to load burn rate data. Please try again.')
+        console.error('Failed to load burn rate:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [])
 
   async function loadData() {
-    const entries = await db.spendingEntries.toArray()
-    setSpendingEntries(entries)
+    try {
+      const entries = await db.spendingEntries.toArray()
+      setSpendingEntries(entries)
 
-    const settings = await db.appSettings.get(1)
-    setCurrentBalance(settings?.burnRateBalance ?? null)
+      const settings = await db.appSettings.get(1)
+      setCurrentBalance(settings?.burnRateBalance ?? null)
+      setError(null)
+    } catch (err) {
+      setError('Failed to load burn rate data. Please try again.')
+      console.error('Failed to load burn rate:', err)
+    }
   }
 
   async function handleSetBalance(e: FormEvent) {
     e.preventDefault()
+    setValidationError(null)
     const amount = Number(newBalance)
-    if (!amount || amount <= 0) return
 
-    await db.appSettings.update(1, { burnRateBalance: amount })
-    setCurrentBalance(amount)
-    setNewBalance('')
-    await loadData()
+    if (!amount || amount <= 0) {
+      setValidationError('Balance must be greater than 0')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      await db.appSettings.update(1, { burnRateBalance: amount })
+      setCurrentBalance(amount)
+      setNewBalance('')
+      setValidationError(null)
+      showToast('Balance updated', 'success')
+      await loadData()
+    } catch (err) {
+      showToast('Failed to update balance. Please try again.', 'error')
+      console.error('Failed to set burn rate balance:', err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (loading) {
+    return <LoadingSpinner message="Loading burn rate..." />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} onRetry={loadData} />
   }
 
   const metrics = currentBalance ? calculateBurnRateMetrics(currentBalance, spendingEntries) : null
@@ -148,6 +197,7 @@ export function BurnRateTracker() {
           className="burn-rate__input"
           id="burn-rate-balance"
           name="burn-rate-balance"
+          disabled={submitting}
         />
         <input
           type="text"
@@ -157,9 +207,10 @@ export function BurnRateTracker() {
           id="burn-rate-label"
           name="burn-rate-label"
         />
-        <button type="submit" className="burn-rate__button">
-          {currentBalance ? 'Update' : 'Set'} Balance
+        <button type="submit" className="burn-rate__button" disabled={submitting}>
+          {submitting ? 'Saving...' : currentBalance ? 'Update' : 'Set'} Balance
         </button>
+        {validationError && <ErrorMessage message={validationError} />}
       </form>
     </div>
   )

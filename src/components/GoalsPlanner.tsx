@@ -2,73 +2,126 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
-import { useNotification } from '../lib/NotificationContext'
+import { useToast } from '../lib/toastStore'
+import { LoadingSpinner } from './LoadingSpinner'
+import { ErrorMessage } from './ErrorMessage'
 import { GOAL_CATEGORIES, type Goal, type GoalCategory, getGoalProgress, getGoalStatus } from '../lib/goals'
 import './GoalsPlanner.css'
 
 export function GoalsPlanner() {
+  const { show: showToast } = useToast()
   const [goals, setGoals] = useState<Goal[]>([])
   const [name, setName] = useState('')
   const [targetAmount, setTargetAmount] = useState('')
   const [category, setCategory] = useState<GoalCategory>('savings')
   const [targetDate, setTargetDate] = useState('')
-  const [expandedGoalId, setExpandedGoalId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const { currency } = useCurrencyContext()
-  const { showNotification } = useNotification()
 
   useEffect(() => {
-    refresh()
+    async function load() {
+      try {
+        setLoading(true)
+        setError(null)
+        await refresh()
+      } catch (err) {
+        setError('Failed to load goals. Please try again.')
+        console.error('Failed to load goals:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [])
 
   async function refresh() {
-    const allGoals = await db.goals.toArray()
-    const sorted = allGoals.sort((a, b) => a.priority - b.priority)
-    setGoals(sorted)
+    try {
+      const allGoals = await db.goals.toArray()
+      const sorted = allGoals.sort((a, b) => a.priority - b.priority)
+      setGoals(sorted)
+      setError(null)
+    } catch (err) {
+      setError('Failed to load goals. Please try again.')
+      console.error('Failed to load goals:', err)
+    }
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    setValidationError(null)
     const amount = Number(targetAmount)
-    if (!name.trim() || !amount || amount <= 0) return
 
-    await db.goals.add({
-      id: crypto.randomUUID(),
-      name: name.trim(),
-      targetAmount: amount,
-      currentAmount: 0,
-      category,
-      targetDate: targetDate || undefined,
-      priority: goals.length,
-      createdAt: new Date().toISOString(),
-    })
+    if (!name.trim()) {
+      setValidationError('Goal name is required')
+      return
+    }
+    if (!amount || amount <= 0) {
+      setValidationError('Target amount must be greater than 0')
+      return
+    }
 
-    setName('')
-    setTargetAmount('')
-    setCategory('savings')
-    setTargetDate('')
-    await refresh()
+    try {
+      setSubmitting(true)
+      await db.goals.add({
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        targetAmount: amount,
+        currentAmount: 0,
+        category,
+        targetDate: targetDate || undefined,
+        priority: goals.length,
+        createdAt: new Date().toISOString(),
+      })
+
+      setName('')
+      setTargetAmount('')
+      setCategory('savings')
+      setTargetDate('')
+      setValidationError(null)
+      showToast('Goal created', 'success')
+      await refresh()
+    } catch (err) {
+      showToast('Failed to create goal. Please try again.', 'error')
+      console.error('Failed to add goal:', err)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   async function deleteGoal(id: string) {
-    await db.goals.delete(id)
-    await refresh()
+    try {
+      await db.goals.delete(id)
+      showToast('Goal deleted', 'success')
+      await refresh()
+    } catch (err) {
+      showToast('Failed to delete goal. Please try again.', 'error')
+      console.error('Failed to delete goal:', err)
+    }
   }
 
   async function updateGoalAmount(id: string, amount: number) {
-    const goal = await db.goals.get(id)
-    if (goal) {
-      const newAmount = Math.max(0, amount)
-      const addedAmount = newAmount - goal.currentAmount
-      await db.goals.update(id, { currentAmount: newAmount })
-
-      const progress = Math.round((newAmount / goal.targetAmount) * 100)
-      const message = progress === 100
-        ? `🎉 Goal complete! You reached ${goal.name}!`
-        : `You just added ${formatCurrency(addedAmount, currency)} to ${goal.name}. Progress: ${progress}%`
-
-      showNotification(message, progress === 100 ? 'success' : 'info', 4000)
-      await refresh()
+    try {
+      const goal = await db.goals.get(id)
+      if (goal) {
+        await db.goals.update(id, { currentAmount: Math.max(0, amount) })
+        showToast('Goal updated', 'success')
+        await refresh()
+      }
+    } catch (err) {
+      showToast('Failed to update goal. Please try again.', 'error')
+      console.error('Failed to update goal amount:', err)
     }
+  }
+
+  if (loading) {
+    return <LoadingSpinner message="Loading goals..." />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} onRetry={refresh} />
   }
 
   return (
@@ -80,6 +133,7 @@ export function GoalsPlanner() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="goals-planner__input"
+          disabled={submitting}
         />
         <input
           type="number"
@@ -89,11 +143,13 @@ export function GoalsPlanner() {
           value={targetAmount}
           onChange={(e) => setTargetAmount(e.target.value)}
           className="goals-planner__input"
+          disabled={submitting}
         />
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value as GoalCategory)}
           className="goals-planner__select"
+          disabled={submitting}
         >
           {Object.entries(GOAL_CATEGORIES).map(([key, label]) => (
             <option key={key} value={key}>
@@ -106,10 +162,12 @@ export function GoalsPlanner() {
           value={targetDate}
           onChange={(e) => setTargetDate(e.target.value)}
           className="goals-planner__input"
+          disabled={submitting}
         />
-        <button type="submit" className="goals-planner__button">
-          Create Goal
+        <button type="submit" className="goals-planner__button" disabled={submitting}>
+          {submitting ? 'Creating...' : 'Create Goal'}
         </button>
+        {validationError && <ErrorMessage message={validationError} />}
       </form>
 
       {goals.length === 0 && (

@@ -1,0 +1,254 @@
+.income-manager {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.income-manager__summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.income-manager__metric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.income-manager__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.income-manager__amount {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.income-manager__form {
+  display: grid;
+  grid-template-columns: 1fr 150px 120px 100px auto;
+  gap: var(--space-md);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  align-items: end;
+}
+
+.income-manager__input,
+.income-manager__select {
+  font: var(--font-size-sm) var(--font-family-sans);
+  color: var(--color-text-primary);
+  background: var(--color-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  transition: all var(--transition-fast);
+}
+
+.income-manager__input:focus,
+.income-manager__select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-wash);
+}
+
+.income-manager__amount-section {
+  display: flex;
+  gap: var(--space-md);
+  grid-column: 1 / -1;
+  align-items: flex-end;
+}
+
+.income-manager__checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.income-manager__checkbox-label input {
+  cursor: pointer;
+}
+
+.income-manager__button {
+  font: var(--font-weight-medium) var(--font-size-sm) var(--font-family-sans);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-weight: var(--font-weight-semibold);
+}
+
+.income-manager__button:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.income-manager__empty {
+  padding: var(--space-3xl) var(--space-lg);
+  text-align: center;
+  background: var(--color-surface-1);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+}
+
+.income-manager__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+
+.income-manager__card {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  transition: all var(--transition-base);
+}
+
+.income-manager__card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.income-manager__card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.income-manager__card-name {
+  margin: 0 0 var(--space-xs) 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.income-manager__card-type {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.income-manager__card-actions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.income-manager__toggle {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--transition-fast);
+}
+
+.income-manager__toggle:hover {
+  color: var(--color-primary);
+}
+
+.income-manager__toggle--active {
+  color: var(--color-success);
+}
+
+.income-manager__delete {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--transition-fast);
+}
+
+.income-manager__delete:hover {
+  color: var(--color-critical);
+}
+
+.income-manager__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.income-manager__stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.income-manager__stats span {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.income-manager__stats strong {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 768px) {
+  .income-manager__form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .income-manager__amount-section {
+    grid-column: 1 / -1;
+  }
+
+  .income-manager__list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .income-manager__form {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .income-manager__input,
+  .income-manager__select {
+    min-height: 44px;
+  }
+
+  .income-manager__amount-section {
+    grid-column: 1;
+  }
+}

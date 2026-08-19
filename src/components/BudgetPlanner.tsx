@@ -1,131 +1,146 @@
 import { useEffect, useMemo, useState } from 'react'
-import { calculateBudget, type BudgetCategory } from '../lib/budget'
+import { calculateTotalMonthlyIncome, type IncomeSource } from '../lib/income'
+import { sumByCategory, filterByDateRange, startOfMonth } from '../lib/spending'
 import { formatCurrency } from '../lib/currency'
-import { BUDGET_CONFIG_ID, db } from '../lib/db'
+import { db, type BudgetConfig } from '../lib/db'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { AllocationBar } from './AllocationBar'
+import { LoadingSpinner } from './LoadingSpinner'
+import { ErrorMessage } from './ErrorMessage'
+import type { SpendingEntry } from '../lib/spending'
 import './BudgetPlanner.css'
 
-function newCategory(): BudgetCategory {
-  return { id: crypto.randomUUID(), name: '', type: 'percentage', percent: 0 }
-}
+const FIXED_CATEGORIES = [
+  'Housing',
+  'Utilities',
+  'Insurance',
+  'Subscriptions',
+  'Other',
+  'Savings',
+]
 
 export function BudgetPlanner() {
   const [income, setIncome] = useState(0)
-  const [categories, setCategories] = useState<BudgetCategory[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const [spendingByCategory, setSpendingByCategory] = useState<Record<string, number>>({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { currency } = useCurrencyContext()
 
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const incomeSources = await db.incomeSources.toArray()
+      const totalIncome = calculateTotalMonthlyIncome(incomeSources)
+      setIncome(totalIncome)
+
+      const allSpending = await db.spendingEntries.toArray()
+      const monthStart = startOfMonth()
+      const monthEnd = new Date()
+      const thisMonthSpending = filterByDateRange(allSpending, monthStart, monthEnd)
+
+      const categorized = sumByCategory(thisMonthSpending)
+      const byCategory: Record<string, number> = {}
+      categorized.forEach((cat) => {
+        byCategory[cat.category] = cat.total
+      })
+      setSpendingByCategory(byCategory)
+    } catch (err) {
+      setError('Failed to load budget data. Please try again.')
+      console.error('Failed to load budget data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Load income sources and spending entries on mount
   useEffect(() => {
-    db.budgetConfig.get(BUDGET_CONFIG_ID).then((config) => {
-      if (config) {
-        setIncome(config.income)
-        setCategories(config.categories)
-      }
-      setLoaded(true)
-    })
+    loadData()
   }, [])
 
-  useEffect(() => {
-    if (!loaded) return
-    db.budgetConfig.put({ id: BUDGET_CONFIG_ID, income, categories })
-  }, [loaded, income, categories])
+  // Calculate allocation based on spending data
+  const budget = useMemo(() => {
+    if (income === 0) {
+      return {
+        income: 0,
+        totalAllocated: 0,
+        remaining: 0,
+        categories: FIXED_CATEGORIES.map((name) => ({
+          id: name,
+          name,
+          type: 'percentage' as const,
+          percent: 0,
+          amount: 0,
+        })),
+      }
+    }
 
-  const budget = useMemo(
-    () => calculateBudget(income, categories),
-    [income, categories],
-  )
+    const categories = FIXED_CATEGORIES.map((name) => {
+      const spending = spendingByCategory[name] || 0
+      const percent = (spending / income) * 100
+      return {
+        id: name,
+        name,
+        type: 'percentage' as const,
+        percent: Math.round(percent * 10) / 10, // Round to 1 decimal
+        amount: spending,
+      }
+    })
 
-  function updateName(id: string, name: string) {
-    setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, name } : c)))
+    const totalAllocated = Object.values(spendingByCategory).reduce((sum, val) => sum + val, 0)
+
+    return {
+      income,
+      totalAllocated,
+      remaining: income - totalAllocated,
+      categories,
+    }
+  }, [income, spendingByCategory])
+
+  if (loading) {
+    return <LoadingSpinner message="Loading budget..." />
   }
 
-  function updateType(id: string, type: 'fixed' | 'percentage') {
-    setCategories((prev) =>
-      prev.map((c) => {
-        if (c.id !== id) return c
-        return type === 'fixed'
-          ? { id: c.id, name: c.name, type: 'fixed', amount: 0 }
-          : { id: c.id, name: c.name, type: 'percentage', percent: 0 }
-      }),
-    )
+  if (error) {
+    return <ErrorMessage message={error} onRetry={() => loadData()} />
   }
-
-  function updateValue(id: string, value: number) {
-    setCategories((prev) =>
-      prev.map((c) => {
-        if (c.id !== id) return c
-        return c.type === 'fixed' ? { ...c, amount: value } : { ...c, percent: value }
-      }),
-    )
-  }
-
-  function removeCategory(id: string) {
-    setCategories((prev) => prev.filter((c) => c.id !== id))
-  }
-
-  if (!loaded) return null
 
   return (
     <div className="budget-planner">
-      <section className="budget-planner__income">
-        <label htmlFor="income">Monthly income</label>
-        <input
-          id="income"
-          type="number"
-          inputMode="decimal"
-          value={income}
-          onChange={(e) => setIncome(Number(e.target.value) || 0)}
-        />
-      </section>
-
       <section className="budget-planner__categories">
         <div className="budget-planner__categories-header">
-          <h2>Categories</h2>
-          <button type="button" onClick={() => setCategories((prev) => [...prev, newCategory()])}>
-            Add category
-          </button>
+          <h2>Budget Allocation</h2>
         </div>
 
-        {categories.length === 0 && (
+        {income === 0 ? (
           <p className="budget-planner__empty">
-            No categories yet — add one to start allocating your income.
+            Add income sources in the Income tab to see your budget allocation.
           </p>
-        )}
-
-        {categories.map((category) => (
-          <div className="budget-planner__row" key={category.id}>
-            <input
-              type="text"
-              placeholder="Category name"
-              value={category.name}
-              onChange={(e) => updateName(category.id, e.target.value)}
-            />
-            <select
-              value={category.type}
-              onChange={(e) =>
-                updateType(category.id, e.target.value as 'fixed' | 'percentage')
-              }
-            >
-              <option value="percentage">%</option>
-              <option value="fixed">$</option>
-            </select>
-            <input
-              type="number"
-              inputMode="decimal"
-              value={category.type === 'fixed' ? category.amount : category.percent}
-              onChange={(e) => updateValue(category.id, Number(e.target.value) || 0)}
-            />
-            <button
-              type="button"
-              className="budget-planner__remove"
-              aria-label={`Remove ${category.name || 'category'}`}
-              onClick={() => removeCategory(category.id)}
-            >
-              ✕
-            </button>
+        ) : (
+          <div className="budget-planner__categories-list">
+            {budget.categories.map((category) => {
+              const hasData = spendingByCategory[category.name] !== undefined
+              const tooltip = hasData ? undefined : 'No information input yet. Please update to get clear percentages.'
+              return (
+                <div
+                  key={category.id}
+                  className="budget-planner__category-row"
+                  title={tooltip}
+                >
+                  <div className="budget-planner__category-name">{category.name}</div>
+                  <div className="budget-planner__category-value">
+                    <span className="budget-planner__percent">
+                      {category.percent.toFixed(1)}%
+                    </span>
+                    <span className="budget-planner__amount">
+                      {formatCurrency(category.amount, currency)}
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
           </div>
-        ))}
+        )}
       </section>
 
       <section className="budget-planner__summary">

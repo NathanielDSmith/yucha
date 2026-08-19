@@ -3,6 +3,7 @@ import { Home } from './components/Home'
 import { BudgetPlanner } from './components/BudgetPlanner'
 import { SpendingHub } from './components/SpendingHub'
 import { GoalsPlanner } from './components/GoalsPlanner'
+import { IncomeManager } from './components/IncomeManager'
 import { NetWorthDashboard } from './components/NetWorthDashboard'
 import { EmergencyFundTracker } from './components/EmergencyFundTracker'
 import { BurnRateTracker } from './components/BurnRateTracker'
@@ -11,31 +12,36 @@ import { ReviewReminder } from './components/ReviewReminder'
 import { Onboarding } from './components/Onboarding'
 import { CurrencySelector } from './components/CurrencySelector'
 import { Icon } from './components/Icon'
-import { NotificationContainer } from './components/NotificationContainer'
-import { NotificationProvider } from './lib/NotificationContext'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { ToastContainer } from './components/Toast'
+import { ToastProvider } from './lib/toastStore'
 import { useCurrency } from './lib/useCurrency'
 import { db } from './lib/db'
 import './App.css'
 
-type TabId = 'home' | 'track-spending' | 'insights-net-worth' | 'insights-emergency' | 'insights-burn-rate' | 'goals' | 'settings-budget' | 'settings-accounts'
+type TabId = 'home' | 'track-spending' | 'insights-net-worth' | 'insights-emergency' | 'insights-burn-rate' | 'goals' | 'income' | 'settings-budget' | 'settings-accounts'
 
 const MAIN_TABS = [
   { id: 'home' as const, icon: 'home' as const, title: 'Home' },
   { id: 'track-spending' as const, icon: 'send' as const, title: 'Spending' },
   { id: 'insights-net-worth' as const, icon: 'trending-up' as const, title: 'Insights' },
   { id: 'goals' as const, icon: 'flag' as const, title: 'Goals' },
+  { id: 'income' as const, icon: 'dollar-sign' as const, title: 'Income' },
   { id: 'settings-budget' as const, icon: 'settings' as const, title: 'Settings' },
 ] as const
 
-function App() {
-  const [tab, setTab] = useState<TabId>('home')
+function AppContent() {
+  const [tab, setTab] = useState<TabId>(() => {
+    const saved = localStorage.getItem('yucha_current_tab')
+    return (saved as TabId) || 'home'
+  })
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const { currency } = useCurrency()
 
   const handleTabChange = (newTab: TabId) => {
-    console.log('Changing tab from', tab, 'to', newTab)
     setTab(newTab)
+    localStorage.setItem('yucha_current_tab', newTab)
   }
 
   useEffect(() => {
@@ -63,7 +69,6 @@ function App() {
 
   return (
     <main className="app">
-      <NotificationContainer />
       <header className="app__header">
         <h1>Yucha</h1>
         <nav className="app__tabs">
@@ -91,10 +96,22 @@ function App() {
         {tab === 'insights-emergency' && <EmergencyFundTracker />}
         {tab === 'insights-burn-rate' && <BurnRateTracker />}
         {tab === 'goals' && <GoalsPlanner />}
+        {tab === 'income' && <IncomeManager />}
         {tab === 'settings-budget' && <BudgetPlanner />}
         {tab === 'settings-accounts' && <AccountManagement />}
       </div>
     </main>
+  )
+}
+
+function App() {
+  return (
+    <ToastProvider>
+      <ErrorBoundary>
+        <AppContent />
+        <ToastContainer />
+      </ErrorBoundary>
+    </ToastProvider>
   )
 }
 
