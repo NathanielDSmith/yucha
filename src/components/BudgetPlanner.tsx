@@ -10,20 +10,12 @@ import { ErrorMessage } from './ErrorMessage'
 import type { SpendingEntry } from '../lib/spending'
 import './BudgetPlanner.css'
 
-const FIXED_CATEGORIES = [
-  'Housing',
-  'Utilities',
-  'Insurance',
-  'Subscriptions',
-  'Other',
-  'Savings',
-]
-
 export function BudgetPlanner() {
   const [income, setIncome] = useState(0)
   const [spendingByCategory, setSpendingByCategory] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isExpanded, setIsExpanded] = useState(true)
   const { currency } = useCurrencyContext()
 
   const loadData = async () => {
@@ -60,22 +52,19 @@ export function BudgetPlanner() {
 
   // Calculate allocation based on spending data
   const budget = useMemo(() => {
-    if (income === 0) {
+    // Get unique categories from actual spending, sorted alphabetically
+    const uniqueCategories = Object.keys(spendingByCategory).sort()
+
+    if (income === 0 || uniqueCategories.length === 0) {
       return {
         income: 0,
         totalAllocated: 0,
         remaining: 0,
-        categories: FIXED_CATEGORIES.map((name) => ({
-          id: name,
-          name,
-          type: 'percentage' as const,
-          percent: 0,
-          amount: 0,
-        })),
+        categories: [],
       }
     }
 
-    const categories = FIXED_CATEGORIES.map((name) => {
+    const categories = uniqueCategories.map((name) => {
       const spending = spendingByCategory[name] || 0
       const percent = (spending / income) * 100
       return {
@@ -105,27 +94,38 @@ export function BudgetPlanner() {
     return <ErrorMessage message={error} onRetry={() => loadData()} />
   }
 
+  const MAX_VISIBLE = 5
+  const hasMany = budget.categories.length > MAX_VISIBLE
+  const visibleCategories = isExpanded ? budget.categories : budget.categories.slice(0, MAX_VISIBLE)
+
   return (
     <div className="budget-planner">
       <section className="budget-planner__categories">
         <div className="budget-planner__categories-header">
           <h2>Budget Allocation</h2>
+          {hasMany && (
+            <button
+              type="button"
+              className="budget-planner__toggle-btn"
+              onClick={() => setIsExpanded(!isExpanded)}
+              aria-label={isExpanded ? 'Collapse categories' : 'Expand categories'}
+            >
+              {isExpanded ? '−' : '+'}
+            </button>
+          )}
         </div>
 
-        {income === 0 ? (
+        {income === 0 || budget.categories.length === 0 ? (
           <p className="budget-planner__empty">
             Add income sources in the Income tab to see your budget allocation.
           </p>
         ) : (
-          <div className="budget-planner__categories-list">
-            {budget.categories.map((category) => {
-              const hasData = spendingByCategory[category.name] !== undefined
-              const tooltip = hasData ? undefined : 'No information input yet. Please update to get clear percentages.'
-              return (
+          <>
+            <div className="budget-planner__categories-list">
+              {visibleCategories.map((category) => (
                 <div
                   key={category.id}
                   className="budget-planner__category-row"
-                  title={tooltip}
                 >
                   <div className="budget-planner__category-name">{category.name}</div>
                   <div className="budget-planner__category-value">
@@ -137,9 +137,14 @@ export function BudgetPlanner() {
                     </span>
                   </div>
                 </div>
-              )
-            })}
-          </div>
+              ))}
+            </div>
+            {!isExpanded && hasMany && (
+              <p className="budget-planner__showing-count">
+                Showing {visibleCategories.length} of {budget.categories.length} categories
+              </p>
+            )}
+          </>
         )}
       </section>
 
