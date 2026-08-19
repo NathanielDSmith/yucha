@@ -1,4 +1,8 @@
-export function LoadingSpinner({ message = 'Loading...' }: { message?: string }) {
+interface LoadingSpinnerProps {
+  message?: string
+}
+
+export function LoadingSpinner({ message = 'Loading...' }: LoadingSpinnerProps) {
   return (
     <div
       style={{
@@ -6,11 +10,10 @@ export function LoadingSpinner({ message = 'Loading...' }: { message?: string })
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 'var(--space-md)',
-        padding: 'var(--space-3xl) var(--space-lg)',
+        padding: 'var(--space-3xl)',
+        minHeight: '200px',
+        gap: 'var(--space-lg)',
       }}
-      role="status"
-      aria-live="polite"
     >
       <div
         style={{
@@ -21,17 +24,18 @@ export function LoadingSpinner({ message = 'Loading...' }: { message?: string })
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }}
-        aria-hidden="true"
       />
-      <p
-        style={{
-          color: 'var(--color-text-muted)',
-          fontSize: 'var(--font-size-sm)',
-          margin: 0,
-        }}
-      >
-        {message}
-      </p>
+      {message && (
+        <p
+          style={{
+            color: 'var(--color-text-muted)',
+            fontSize: 'var(--font-size-sm)',
+            margin: 0,
+          }}
+        >
+          {message}
+        </p>
+      )}
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
