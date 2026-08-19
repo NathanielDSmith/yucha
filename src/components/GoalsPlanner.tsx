@@ -20,7 +20,6 @@ export function GoalsPlanner() {
   const [validationError, setValidationError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const { currency } = useCurrencyContext()
-  const { showNotification } = useNotification()
 
   useEffect(() => {
     async function load() {
@@ -103,20 +102,6 @@ export function GoalsPlanner() {
     }
   }
 
-  async function updateGoalAmount(id: string, amount: number) {
-    try {
-      const goal = await db.goals.get(id)
-      if (goal) {
-        await db.goals.update(id, { currentAmount: Math.max(0, amount) })
-        showToast('Goal updated', 'success')
-        await refresh()
-      }
-    } catch (err) {
-      showToast('Failed to update goal. Please try again.', 'error')
-      console.error('Failed to update goal amount:', err)
-    }
-  }
-
   if (loading) {
     return <LoadingSpinner message="Loading goals..." />
   }
@@ -191,25 +176,14 @@ export function GoalsPlanner() {
                     {GOAL_CATEGORIES[goal.category as GoalCategory]}
                   </p>
                 </div>
-                <div className="goals-planner__card-actions">
-                  <button
-                    type="button"
-                    onClick={() => setExpandedGoalId(expandedGoalId === goal.id ? null : goal.id)}
-                    className="goals-planner__add-icon"
-                    aria-label={`Add amount to ${goal.name}`}
-                    title="Add to goal"
-                  >
-                    +
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteGoal(goal.id)}
-                    className="goals-planner__delete"
-                    aria-label={`Delete ${goal.name}`}
-                  >
-                    ✕
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => deleteGoal(goal.id)}
+                  className="goals-planner__delete"
+                  aria-label={`Delete ${goal.name}`}
+                >
+                  ✕
+                </button>
               </div>
 
               <div className="goals-planner__progress-container">
@@ -238,48 +212,6 @@ export function GoalsPlanner() {
                   <strong>{formatCurrency(Math.max(0, goal.targetAmount - goal.currentAmount), currency)}</strong>
                 </div>
               </div>
-
-              {expandedGoalId === goal.id && (
-                <div className="goals-planner__amount-input">
-                  <label htmlFor={`amount-${goal.id}`}>Add to this goal:</label>
-                  <div className="goals-planner__amount-group">
-                    <input
-                      id={`amount-${goal.id}`}
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      inputMode="decimal"
-                      autoFocus
-                      onBlur={(e) => {
-                        const amount = Number(e.target.value)
-                        if (amount > 0) {
-                          updateGoalAmount(goal.id, goal.currentAmount + amount)
-                          e.target.value = ''
-                          setExpandedGoalId(null)
-                        }
-                      }}
-                      className="goals-planner__amount-input-field"
-                    />
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        const input = document.querySelector(
-                          `#amount-${goal.id}`,
-                        ) as HTMLInputElement
-                        const amount = Number(input?.value)
-                        if (amount > 0) {
-                          updateGoalAmount(goal.id, goal.currentAmount + amount)
-                          input.value = ''
-                          setExpandedGoalId(null)
-                        }
-                      }}
-                      className="goals-planner__add-button"
-                    >
-                      ✓
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           )
         })}
