@@ -19,6 +19,9 @@ export function GoalsPlanner() {
   const [error, setError] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [fundingGoalId, setFundingGoalId] = useState<string | null>(null)
+  const [fundAmount, setFundAmount] = useState('')
+  const [fundValidationError, setFundValidationError] = useState<string | null>(null)
   const { currency } = useCurrencyContext()
 
   useEffect(() => {
@@ -86,6 +89,45 @@ export function GoalsPlanner() {
     } catch (err) {
       showToast('Failed to create goal. Please try again.', 'error')
       console.error('Failed to add goal:', err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  function openFundingModal(goal: Goal) {
+    setFundingGoalId(goal.id)
+    setFundAmount('')
+    setFundValidationError(null)
+  }
+
+  async function handleAddFunds(e: FormEvent) {
+    e.preventDefault()
+    setFundValidationError(null)
+    const amount = Number(fundAmount)
+
+    if (!fundAmount || !amount || amount <= 0) {
+      setFundValidationError('Amount must be greater than 0')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      const goal = goals.find((g) => g.id === fundingGoalId)
+      if (!goal) {
+        throw new Error('Goal not found')
+      }
+
+      await db.goals.update(fundingGoalId!, {
+        currentAmount: goal.currentAmount + amount,
+      })
+
+      showToast(`Added ${formatCurrency(amount, currency)} to ${goal.name}`, 'success')
+      setFundingGoalId(null)
+      setFundAmount('')
+      await refresh()
+    } catch (err) {
+      showToast('Failed to add funds. Please try again.', 'error')
+      console.error('Failed to add funds:', err)
     } finally {
       setSubmitting(false)
     }
@@ -176,14 +218,24 @@ export function GoalsPlanner() {
                     {GOAL_CATEGORIES[goal.category as GoalCategory]}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => deleteGoal(goal.id)}
-                  className="goals-planner__delete"
-                  aria-label={`Delete ${goal.name}`}
-                >
-                  ✕
-                </button>
+                <div className="goals-planner__card-actions">
+                  <button
+                    type="button"
+                    onClick={() => openFundingModal(goal)}
+                    className="goals-planner__add-funds"
+                    aria-label={`Add funds to ${goal.name}`}
+                  >
+                    +
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteGoal(goal.id)}
+                    className="goals-planner__delete"
+                    aria-label={`Delete ${goal.name}`}
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               <div className="goals-planner__progress-container">
@@ -216,6 +268,46 @@ export function GoalsPlanner() {
           )
         })}
       </div>
+
+      {fundingGoalId && (
+        <div className="goals-planner__modal-overlay" onClick={() => setFundingGoalId(null)}>
+          <div className="goals-planner__modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Add Funds to Goal</h2>
+            <form className="goals-planner__fund-form" onSubmit={handleAddFunds} noValidate>
+              <label>
+                <span>Amount to add</span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  placeholder="Amount"
+                  step="0.01"
+                  value={fundAmount}
+                  onChange={(e) => setFundAmount(e.target.value)}
+                  disabled={submitting}
+                  autoFocus
+                  aria-describedby={fundValidationError ? 'fund-validation-error' : undefined}
+                />
+              </label>
+              {fundValidationError && (
+                <ErrorMessage message={fundValidationError} />
+              )}
+              <div className="goals-planner__modal-actions">
+                <button
+                  type="button"
+                  className="goals-planner__modal-cancel"
+                  onClick={() => setFundingGoalId(null)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+                <button type="submit" disabled={submitting}>
+                  {submitting ? 'Adding...' : 'Add Funds'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
