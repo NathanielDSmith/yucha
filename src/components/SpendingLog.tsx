@@ -21,6 +21,12 @@ export function SpendingLog() {
   const [error, setError] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editAmount, setEditAmount] = useState('')
+  const [editCategory, setEditCategory] = useState('')
+  const [editDate, setEditDate] = useState('')
+  const [editNote, setEditNote] = useState('')
+  const [editValidationError, setEditValidationError] = useState<string | null>(null)
 
   async function refresh() {
     try {
@@ -86,6 +92,48 @@ export function SpendingLog() {
     } catch (err) {
       showToast('Failed to log spending. Please try again.', 'error')
       console.error('Failed to add spending entry:', err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  function handleEdit(entry: SpendingEntry) {
+    setEditingId(entry.id)
+    setEditAmount(String(entry.amount))
+    setEditCategory(entry.category)
+    setEditDate(entry.date)
+    setEditNote(entry.note || '')
+    setEditValidationError(null)
+  }
+
+  async function handleUpdateSubmit(e: FormEvent) {
+    e.preventDefault()
+    setEditValidationError(null)
+    const parsedAmount = Number(editAmount)
+
+    if (!editAmount || !parsedAmount || parsedAmount <= 0) {
+      setEditValidationError('Amount must be greater than 0')
+      return
+    }
+    if (!editCategory.trim()) {
+      setEditValidationError('Category is required')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      await db.spendingEntries.update(editingId!, {
+        amount: parsedAmount,
+        category: editCategory.trim(),
+        date: editDate,
+        note: editNote.trim() || undefined,
+      })
+      showToast('Entry updated successfully', 'success')
+      setEditingId(null)
+      await refresh()
+    } catch (err) {
+      showToast('Failed to update entry. Please try again.', 'error')
+      console.error('Failed to update spending entry:', err)
     } finally {
       setSubmitting(false)
     }
@@ -173,6 +221,14 @@ export function SpendingLog() {
               <span className="spending-log__amount">{formatCurrency(entry.amount)}</span>
               <button
                 type="button"
+                className="spending-log__edit-btn"
+                aria-label={`Edit ${entry.category} entry`}
+                onClick={() => handleEdit(entry)}
+              >
+                ✎
+              </button>
+              <button
+                type="button"
                 aria-label={`Delete ${entry.category} entry`}
                 onClick={() => handleDelete(entry.id)}
               >
@@ -181,6 +237,76 @@ export function SpendingLog() {
             </li>
           ))}
         </ul>
+      )}
+
+      {editingId && (
+        <div className="spending-log__modal-overlay" onClick={() => setEditingId(null)}>
+          <div className="spending-log__modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Edit Spending Entry</h2>
+            <form className="spending-log__edit-form" onSubmit={handleUpdateSubmit} noValidate>
+              <label>
+                <span>Amount</span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  placeholder="Amount"
+                  step="0.01"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  disabled={submitting}
+                  aria-describedby={editValidationError ? 'edit-validation-error' : undefined}
+                />
+              </label>
+              <label>
+                <span>Category</span>
+                <input
+                  type="text"
+                  placeholder="Category"
+                  list="spending-category-options"
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value)}
+                  disabled={submitting}
+                  aria-describedby={editValidationError ? 'edit-validation-error' : undefined}
+                />
+              </label>
+              <label>
+                <span>Date</span>
+                <input
+                  type="date"
+                  value={editDate}
+                  onChange={(e) => setEditDate(e.target.value)}
+                  disabled={submitting}
+                />
+              </label>
+              <label>
+                <span>Note</span>
+                <input
+                  type="text"
+                  placeholder="Note (optional)"
+                  value={editNote}
+                  onChange={(e) => setEditNote(e.target.value)}
+                  disabled={submitting}
+                />
+              </label>
+              {editValidationError && (
+                <ErrorMessage message={editValidationError} />
+              )}
+              <div className="spending-log__modal-actions">
+                <button
+                  type="button"
+                  className="spending-log__modal-cancel"
+                  onClick={() => setEditingId(null)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+                <button type="submit" disabled={submitting}>
+                  {submitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   )
