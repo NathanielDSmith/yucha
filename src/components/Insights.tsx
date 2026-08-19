@@ -12,6 +12,8 @@ import {
   type RetrospectivePeriod,
   type SpendingEntry,
 } from '../lib/spending'
+import { LoadingSpinner } from './LoadingSpinner'
+import { ErrorMessage } from './ErrorMessage'
 import type { Subscription } from '../lib/subscriptions'
 import './Insights.css'
 
@@ -30,16 +32,31 @@ export function Insights() {
   const [period, setPeriod] = useState<RetrospectivePeriod>('month')
   const [years, setYears] = useState(10)
   const [ratePercent, setRatePercent] = useState(DEFAULT_ANNUAL_RETURN_RATE * 100)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    db.budgetConfig.get(BUDGET_CONFIG_ID).then((config) => {
-      if (config) {
-        setIncome(config.income)
-        setCategories(config.categories)
+    async function load() {
+      try {
+        setLoading(true)
+        setError(null)
+        const config = await db.budgetConfig.get(BUDGET_CONFIG_ID)
+        if (config) {
+          setIncome(config.income)
+          setCategories(config.categories)
+        }
+        const allEntries = await db.spendingEntries.toArray()
+        setEntries(allEntries)
+        const allSubs = await db.subscriptions.toArray()
+        setSubs(allSubs)
+      } catch (err) {
+        setError('Failed to load insights data. Please try again.')
+        console.error('Failed to load insights:', err)
+      } finally {
+        setLoading(false)
       }
-    })
-    db.spendingEntries.toArray().then(setEntries)
-    db.subscriptions.toArray().then(setSubs)
+    }
+    load()
   }, [])
 
   const budget = useMemo(() => calculateBudget(income, categories), [income, categories])
@@ -70,6 +87,14 @@ export function Insights() {
     () => buildRetrospective(entries, period, years, ratePercent / 100),
     [entries, period, years, ratePercent],
   )
+
+  if (loading) {
+    return <LoadingSpinner message="Loading insights..." />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} onRetry={() => window.location.reload()} />
+  }
 
   return (
     <div className="insights">
