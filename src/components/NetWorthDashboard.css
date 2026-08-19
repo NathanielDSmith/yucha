@@ -195,3 +195,14 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 600px) {
+  .net-worth__form {
+    grid-template-columns: 1fr;
+  }
+
+  .net-worth__delete {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

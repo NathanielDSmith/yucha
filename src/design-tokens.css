@@ -46,6 +46,7 @@
 
   /* Status Colors */
   --color-critical: #d03b3b;
+  --color-critical-dark: #b83030;
   --color-critical-wash: rgba(208, 59, 59, 0.1);
   --color-warning: #ff9500;
   --color-warning-wash: rgba(255, 149, 0, 0.1);

@@ -2,50 +2,109 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
+import { useToast } from '../lib/toastStore'
+import { LoadingSpinner } from './LoadingSpinner'
+import { ErrorMessage } from './ErrorMessage'
 import { ACCOUNT_TYPES, type AccountType, calculateNetWorth, getTotalByType, type Account } from '../lib/accounts'
 import { DEFAULT_CURRENCY } from '../lib/currencies'
 import './NetWorthDashboard.css'
 
 export function NetWorthDashboard() {
+  const { show: showToast } = useToast()
   const [accounts, setAccounts] = useState<Account[]>([])
   const [name, setName] = useState('')
   const [balance, setBalance] = useState('')
   const [type, setType] = useState<AccountType>('savings')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const { currency } = useCurrencyContext()
 
   useEffect(() => {
-    refresh()
+    async function load() {
+      try {
+        setLoading(true)
+        setError(null)
+        await refresh()
+      } catch (err) {
+        setError('Failed to load net worth data. Please try again.')
+        console.error('Failed to load net worth:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [])
 
   async function refresh() {
-    const allAccounts = await db.accounts.toArray()
-    setAccounts(allAccounts)
+    try {
+      const allAccounts = await db.accounts.toArray()
+      setAccounts(allAccounts)
+      setError(null)
+    } catch (err) {
+      setError('Failed to load accounts. Please try again.')
+      console.error('Failed to load net worth:', err)
+    }
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    setValidationError(null)
     const amount = Number(balance)
-    if (!name.trim() || !amount || amount < 0) return
 
-    await db.accounts.add({
-      id: crypto.randomUUID(),
-      name: name.trim(),
-      balance: amount,
-      type,
-      currency: currency || DEFAULT_CURRENCY,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    })
+    if (!name.trim()) {
+      setValidationError('Account name is required')
+      return
+    }
+    if (!amount || amount < 0) {
+      setValidationError('Balance must be 0 or greater')
+      return
+    }
 
-    setName('')
-    setBalance('')
-    setType('savings')
-    await refresh()
+    try {
+      setSubmitting(true)
+      await db.accounts.add({
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        balance: amount,
+        type,
+        currency: currency || DEFAULT_CURRENCY,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+
+      setName('')
+      setBalance('')
+      setType('savings')
+      setValidationError(null)
+      showToast('Account added', 'success')
+      await refresh()
+    } catch (err) {
+      showToast('Failed to add account. Please try again.', 'error')
+      console.error('Failed to add account:', err)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   async function deleteAccount(id: string) {
-    await db.accounts.delete(id)
-    await refresh()
+    try {
+      await db.accounts.delete(id)
+      showToast('Account deleted', 'success')
+      await refresh()
+    } catch (err) {
+      showToast('Failed to delete account. Please try again.', 'error')
+      console.error('Failed to delete account:', err)
+    }
+  }
+
+  if (loading) {
+    return <LoadingSpinner message="Loading net worth..." />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} onRetry={refresh} />
   }
 
   const netWorth = calculateNetWorth(accounts)
@@ -78,6 +137,7 @@ export function NetWorthDashboard() {
           className="net-worth__input"
           id="net-worth-name"
           name="net-worth-name"
+          disabled={submitting}
         />
         <input
           type="number"
@@ -89,6 +149,7 @@ export function NetWorthDashboard() {
           className="net-worth__input"
           id="net-worth-balance"
           name="net-worth-balance"
+          disabled={submitting}
         />
         <select
           value={type}
@@ -96,6 +157,7 @@ export function NetWorthDashboard() {
           className="net-worth__select"
           id="net-worth-type"
           name="net-worth-type"
+          disabled={submitting}
         >
           {Object.entries(ACCOUNT_TYPES).map(([key, label]) => (
             <option key={key} value={key}>
@@ -103,9 +165,10 @@ export function NetWorthDashboard() {
             </option>
           ))}
         </select>
-        <button type="submit" className="net-worth__button">
-          Add Account
+        <button type="submit" className="net-worth__button" disabled={submitting}>
+          {submitting ? 'Adding...' : 'Add Account'}
         </button>
+        {validationError && <ErrorMessage message={validationError} />}
       </form>
 
       {accounts.length === 0 && (
