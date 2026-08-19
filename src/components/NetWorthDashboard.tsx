@@ -111,7 +111,7 @@ export function NetWorthDashboard() {
 
   return (
     <div className="net-worth">
-      <div className="net-worth__hero" style={{ color: '#000000' }}>
+      <div className="net-worth__hero">
         <p className="net-worth__hero-label">Net Worth</p>
         <p className="net-worth__hero-value">{formatCurrency(netWorth, currency)}</p>
       </div>
