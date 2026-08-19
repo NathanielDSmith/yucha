@@ -88,7 +88,7 @@ export function Home({ onNavigate }: HomeProps) {
         </div>
 
         <div style={{ padding: 'var(--space-lg)', background: 'var(--color-surface-1)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-          <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)' }}>Monthly Subscriptions</p>
+          <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)' }}>Monthly Recurring Costs</p>
           <motion.div
             style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-text-primary)', marginTop: 'var(--space-sm)' }}
             initial={{ scale: 0.8 }}
