@@ -36,7 +36,13 @@ export function calculateMonthlyIncome(source: IncomeSource): number {
 export function calculateTotalMonthlyIncome(sources: IncomeSource[]): number {
   return sources
     .filter((s) => s.isActive)
-    .reduce((total, source) => total + calculateMonthlyIncome(source), 0)
+    .reduce((total, source) => {
+      // Use average for variable income, regular calculation for fixed
+      if (source.minAmount !== undefined && source.maxAmount !== undefined) {
+        return total + calculateAverageMonthlyIncome(source)
+      }
+      return total + calculateMonthlyIncome(source)
+    }, 0)
 }
 
 // For variable income, calculate average
