@@ -1,48 +1,49 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-export interface UseAsyncDataOptions<T> {
+interface UseAsyncDataOptions<T> {
   onSuccess?: (data: T) => void
   onError?: (error: Error) => void
-  immediate?: boolean
 }
 
-export interface UseAsyncDataResult<T> {
+interface UseAsyncDataState<T> {
   data: T | null
   loading: boolean
-  error: Error | null
-  retry: () => void
+  error: string | null
+  retry: () => Promise<void>
 }
 
 export function useAsyncData<T>(
   asyncFn: () => Promise<T>,
-  options: UseAsyncDataOptions<T> = {},
-): UseAsyncDataResult<T> {
-  const { onSuccess, onError, immediate = true } = options
+  options?: UseAsyncDataOptions<T>,
+): UseAsyncDataState<T> {
   const [data, setData] = useState<T | null>(null)
-  const [loading, setLoading] = useState(immediate)
-  const [error, setError] = useState<Error | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const execute = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
       const result = await asyncFn()
       setData(result)
-      onSuccess?.(result)
+      options?.onSuccess?.(result)
     } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err))
-      setError(error)
-      onError?.(error)
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred'
+      setError(errorMessage)
+      options?.onError?.(err instanceof Error ? err : new Error(errorMessage))
     } finally {
       setLoading(false)
     }
-  }, [asyncFn, onSuccess, onError])
+  }, [asyncFn, options])
 
   useEffect(() => {
-    if (immediate) {
-      execute()
-    }
-  }, [execute, immediate])
+    fetchData()
+  }, [fetchData])
 
-  return { data, loading, error, retry: execute }
+  return {
+    data,
+    loading,
+    error,
+    retry: fetchData,
+  }
 }
