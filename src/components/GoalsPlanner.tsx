@@ -20,6 +20,7 @@ export function GoalsPlanner() {
   const [validationError, setValidationError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const { currency } = useCurrencyContext()
+  const { showNotification } = useNotification()
 
   useEffect(() => {
     async function load() {
