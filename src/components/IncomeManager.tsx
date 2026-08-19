@@ -33,6 +33,16 @@ export function IncomeManager() {
   const [error, setError] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editType, setEditType] = useState<IncomeType | ''>('')
+  const [editAmount, setEditAmount] = useState('')
+  const [editMinAmount, setEditMinAmount] = useState('')
+  const [editMaxAmount, setEditMaxAmount] = useState('')
+  const [editFrequency, setEditFrequency] = useState<IncomeFrequency | ''>('')
+  const [editDayOfMonth, setEditDayOfMonth] = useState('1')
+  const [editIsVariable, setEditIsVariable] = useState(false)
+  const [editValidationError, setEditValidationError] = useState<string | null>(null)
   const { currency } = useCurrencyContext()
 
   async function refresh() {
@@ -125,6 +135,73 @@ export function IncomeManager() {
     } catch (err) {
       showToast('Failed to add income source. Please try again.', 'error')
       console.error('Failed to add income source:', err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  function openEditModal(source: IncomeSource) {
+    setEditingId(source.id)
+    setEditName(source.name)
+    setEditType(source.type)
+    setEditAmount(String(source.amount || ''))
+    setEditMinAmount(String(source.minAmount || ''))
+    setEditMaxAmount(String(source.maxAmount || ''))
+    setEditFrequency(source.frequency)
+    setEditDayOfMonth(String(source.dayOfMonth || '1'))
+    setEditIsVariable(!!(source.minAmount && source.maxAmount))
+    setEditValidationError(null)
+  }
+
+  async function handleEditSubmit(e: FormEvent) {
+    e.preventDefault()
+    setEditValidationError(null)
+    const parsedAmount = Number(editAmount)
+    const parsedMin = editMinAmount ? Number(editMinAmount) : undefined
+    const parsedMax = editMaxAmount ? Number(editMaxAmount) : undefined
+
+    if (!editName.trim()) {
+      setEditValidationError('Income source name is required')
+      return
+    }
+    if (!editType) {
+      setEditValidationError('Job type is required')
+      return
+    }
+    if (!editFrequency) {
+      setEditValidationError('Frequency is required')
+      return
+    }
+
+    if (editIsVariable) {
+      if (!parsedMin || !parsedMax || parsedMin <= 0 || parsedMax <= 0) {
+        setEditValidationError('Min and max amounts must be greater than 0')
+        return
+      }
+    } else {
+      if (!parsedAmount || parsedAmount <= 0) {
+        setEditValidationError('Amount must be greater than 0')
+        return
+      }
+    }
+
+    try {
+      setSubmitting(true)
+      await db.incomeSources.update(editingId!, {
+        name: editName.trim(),
+        type: editType,
+        amount: editIsVariable ? undefined : parsedAmount,
+        minAmount: editIsVariable ? parsedMin : undefined,
+        maxAmount: editIsVariable ? parsedMax : undefined,
+        frequency: editFrequency,
+        dayOfMonth: editFrequency === 'monthly' ? Number(editDayOfMonth) : undefined,
+      })
+      showToast('Income source updated', 'success')
+      setEditingId(null)
+      await refresh()
+    } catch (err) {
+      showToast('Failed to update income source. Please try again.', 'error')
+      console.error('Failed to update income source:', err)
     } finally {
       setSubmitting(false)
     }
@@ -306,6 +383,14 @@ export function IncomeManager() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => openEditModal(source)}
+                  className="income-manager__edit"
+                  aria-label={`Edit ${source.name}`}
+                >
+                  ✎
+                </button>
+                <button
+                  type="button"
                   onClick={() => removeSource(source.id)}
                   className="income-manager__delete"
                   aria-label={`Delete ${source.name}`}
@@ -338,6 +423,137 @@ export function IncomeManager() {
           </div>
         ))}
       </div>
+
+      {editingId && (
+        <div className="income-manager__modal-overlay" onClick={() => setEditingId(null)}>
+          <div className="income-manager__modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Edit Income Source</h2>
+            <form className="income-manager__edit-form" onSubmit={handleEditSubmit}>
+              <label>
+                <span>Income Source Name</span>
+                <input
+                  type="text"
+                  placeholder="e.g., Software Engineer at Acme"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  disabled={submitting}
+                  autoFocus
+                  aria-describedby={editValidationError ? 'edit-validation-error' : undefined}
+                />
+              </label>
+
+              <label>
+                <span>Job Type</span>
+                <select
+                  value={editType}
+                  onChange={(e) => setEditType(e.target.value as IncomeType | '')}
+                  disabled={submitting}
+                  aria-describedby={editValidationError ? 'edit-validation-error' : undefined}
+                >
+                  <option value="" disabled hidden>Job type</option>
+                  {Object.entries(INCOME_TYPES).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span>Frequency</span>
+                <select
+                  value={editFrequency}
+                  onChange={(e) => setEditFrequency(e.target.value as IncomeFrequency | '')}
+                  disabled={submitting}
+                  aria-describedby={editValidationError ? 'edit-validation-error' : undefined}
+                >
+                  <option value="" disabled hidden>Frequency</option>
+                  {FREQUENCIES.map((freq) => (
+                    <option key={freq} value={freq}>
+                      {freq.charAt(0).toUpperCase() + freq.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {editFrequency === 'monthly' && (
+                <label>
+                  <span>Day of Month</span>
+                  <DayOfMonthPicker
+                    value={Number(editDayOfMonth)}
+                    onChange={(day) => setEditDayOfMonth(String(day))}
+                  />
+                </label>
+              )}
+
+              <label className="income-manager__checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={editIsVariable}
+                  onChange={(e) => setEditIsVariable(e.target.checked)}
+                  disabled={submitting}
+                />
+                Variable income
+              </label>
+
+              {editIsVariable ? (
+                <>
+                  <label>
+                    <span>Min Amount</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="Min amount"
+                      value={editMinAmount}
+                      onChange={(e) => setEditMinAmount(e.target.value)}
+                      disabled={submitting}
+                    />
+                  </label>
+                  <label>
+                    <span>Max Amount</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="Max amount"
+                      value={editMaxAmount}
+                      onChange={(e) => setEditMaxAmount(e.target.value)}
+                      disabled={submitting}
+                    />
+                  </label>
+                </>
+              ) : (
+                <label>
+                  <span>Amount</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Amount"
+                    value={editAmount}
+                    onChange={(e) => setEditAmount(e.target.value)}
+                    disabled={submitting}
+                  />
+                </label>
+              )}
+
+              {editValidationError && (
+                <ErrorMessage message={editValidationError} />
+              )}
+
+              <div className="income-manager__modal-actions">
+                <button
+                  type="button"
+                  className="income-manager__modal-cancel"
+                  onClick={() => setEditingId(null)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+                <button type="submit" disabled={submitting}>
+                  {submitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

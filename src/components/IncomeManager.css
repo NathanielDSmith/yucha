@@ -180,6 +180,20 @@
   color: var(--color-success);
 }
 
+.income-manager__edit {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--transition-fast);
+}
+
+.income-manager__edit:hover {
+  color: var(--color-primary-dark);
+}
+
 .income-manager__delete {
   background: none;
   border: none;
@@ -221,6 +235,120 @@
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   font-variant-numeric: tabular-nums;
+}
+
+.income-manager__modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.income-manager__modal {
+  background: var(--color-surface-1);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  max-width: 500px;
+  width: 90%;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.income-manager__modal h2 {
+  margin: 0 0 var(--space-lg) 0;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+}
+
+.income-manager__edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.income-manager__edit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.income-manager__edit-form label span {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.income-manager__edit-form input,
+.income-manager__edit-form select {
+  font: var(--font-size-sm) var(--font-family-sans);
+  color: var(--color-text-primary);
+  background: var(--color-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  transition: all var(--transition-fast);
+}
+
+.income-manager__edit-form input:focus,
+.income-manager__edit-form select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-wash);
+}
+
+.income-manager__modal-actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: flex-end;
+  margin-top: var(--space-lg);
+}
+
+.income-manager__modal-cancel {
+  background: var(--color-surface-2);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.income-manager__modal-cancel:hover {
+  background: var(--color-surface-3);
+}
+
+.income-manager__modal-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.income-manager__modal button[type="submit"] {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.income-manager__modal button[type="submit"]:hover {
+  background: var(--color-primary-dark);
+}
+
+.income-manager__modal button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
