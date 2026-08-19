@@ -2,14 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { costPerUse, totalPaid, type Subscription } from '../lib/subscriptions'
 import { formatCurrency } from '../lib/currency'
 import { db } from '../lib/db'
+import { today } from '../lib/dates'
 import './Subscriptions.css'
-
-function today(): string {
-  const d = new Date()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${d.getFullYear()}-${month}-${day}`
-}
 
 export function Subscriptions() {
   const [subs, setSubs] = useState<Subscription[]>([])

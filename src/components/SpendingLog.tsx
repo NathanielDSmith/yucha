@@ -3,17 +3,11 @@ import type { SpendingEntry } from '../lib/spending'
 import { formatCurrency } from '../lib/currency'
 import { BUDGET_CONFIG_ID, db } from '../lib/db'
 import { useToast } from '../lib/toastStore'
+import { today } from '../lib/dates'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ErrorMessage } from './ErrorMessage'
 import { EmptyState } from './EmptyState'
 import './SpendingLog.css'
-
-function today(): string {
-  const d = new Date()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${d.getFullYear()}-${month}-${day}`
-}
 
 export function SpendingLog() {
   const { show: showToast } = useToast()
