@@ -37,7 +37,6 @@ function AppContent() {
   })
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
-  const { currency } = useCurrency()
 
   const handleTabChange = (newTab: TabId) => {
     setTab(newTab)
@@ -69,7 +68,6 @@ function AppContent() {
 
   return (
     <main className="app">
-      <NotificationContainer />
       <header className="app__header">
         <h1>Yucha</h1>
         <nav className="app__tabs">

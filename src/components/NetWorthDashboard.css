@@ -8,7 +8,7 @@
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   border-radius: var(--radius-lg);
   padding: var(--space-3xl) var(--space-2xl);
-  color: var(--color-text-inverse);
+  color: #000000 !important;
   text-align: center;
 }
 
@@ -18,7 +18,8 @@
   font-weight: var(--font-weight-medium);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  opacity: 0.9;
+  opacity: 0.8;
+  color: #000000 !important;
 }
 
 .net-worth__hero-value {
@@ -27,6 +28,7 @@
   font-weight: var(--font-weight-bold);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
+  color: #000000 !important;
 }
 
 .net-worth__breakdown {

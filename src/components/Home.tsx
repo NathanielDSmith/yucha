@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
@@ -12,53 +13,39 @@ interface HomeProps {
 }
 
 export function Home({ onNavigate }: HomeProps) {
-  const [primaryMetric, setPrimaryMetric] = useState<{
-    label: string
-    value: string
-    message: string
-  } | null>(null)
+  const [totalSpending, setTotalSpending] = useState(0)
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
+  const [goals, setGoals] = useState<Goal[]>([])
+  const [currentGoalIndex, setCurrentGoalIndex] = useState(0)
+  const [emergencyFundPercent, setEmergencyFundPercent] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { currency } = useCurrencyContext()
 
   useEffect(() => {
-    loadMetrics()
-  }, [])
+    loadDashboard()
+    const interval = setInterval(() => {
+      setCurrentGoalIndex(prev => (prev + 1) % Math.max(goals.length, 1))
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [goals.length])
 
-  async function loadMetrics() {
+  async function loadDashboard() {
     try {
       setIsLoading(true)
       setError(null)
       const settings = await db.appSettings.get(1)
       const spending = await db.spendingEntries.toArray()
-      const emergencyFund = settings?.emergencyFundGoal
-      const burnRate = settings?.burnRateBalance
+      const subs = await db.subscriptions.toArray()
+      const allGoals = await db.goals.toArray()
 
-      // Prioritize which metric to show
-      if (emergencyFund) {
-        const metrics = getEmergencyFundMetrics(emergencyFund, spending)
-        const percent = Math.round(metrics.adequacyRatio * 100)
-        setPrimaryMetric({
-          label: 'Emergency Fund Progress',
-          value: `${percent}%`,
-          message: metrics.isAdequate
-            ? `You're covered for ${metrics.monthsOfRunway.toFixed(1)} months 💚`
-            : `${Math.ceil(metrics.monthsOfRunway)} months saved. Goal: 6 months.`,
-        })
-      } else if (burnRate) {
-        const metrics = calculateBurnRateMetrics(burnRate, spending)
-        const days = Math.floor(metrics.daysOfRunway)
-        setPrimaryMetric({
-          label: 'Runway Remaining',
-          value: `${days} days`,
-          message: `At your current pace, you have ${Math.floor(days / 30)} months left.`,
-        })
-      } else {
-        setPrimaryMetric({
-          label: 'Welcome to Yucha',
-          value: 'Let\'s begin',
-          message: 'Set up your emergency fund goal to get started.',
-        })
+      setTotalSpending(spending.reduce((sum, s) => sum + s.amount, 0))
+      setSubscriptions(subs)
+      setGoals(allGoals.sort((a, b) => a.priority - b.priority))
+
+      if (settings?.emergencyFundGoal) {
+        const metrics = getEmergencyFundMetrics(settings.emergencyFundGoal, spending)
+        setEmergencyFundPercent(Math.round(metrics.adequacyRatio * 100))
       }
     } catch (err) {
       setError('Failed to load your financial snapshot. Please try again.')
