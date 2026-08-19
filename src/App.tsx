@@ -11,9 +11,6 @@ import { ReviewReminder } from './components/ReviewReminder'
 import { Onboarding } from './components/Onboarding'
 import { CurrencySelector } from './components/CurrencySelector'
 import { Icon } from './components/Icon'
-import { NotificationContainer } from './components/NotificationContainer'
-import { NotificationProvider } from './lib/NotificationContext'
-import { useCurrency } from './lib/useCurrency'
 import { db } from './lib/db'
 import './App.css'
 
@@ -28,14 +25,16 @@ const MAIN_TABS = [
 ] as const
 
 function App() {
-  const [tab, setTab] = useState<TabId>('home')
+  const [tab, setTab] = useState<TabId>(() => {
+    const saved = localStorage.getItem('yucha_current_tab')
+    return (saved as TabId) || 'home'
+  })
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
-  const { currency } = useCurrency()
 
   const handleTabChange = (newTab: TabId) => {
-    console.log('Changing tab from', tab, 'to', newTab)
     setTab(newTab)
+    localStorage.setItem('yucha_current_tab', newTab)
   }
 
   useEffect(() => {
@@ -63,7 +62,6 @@ function App() {
 
   return (
     <main className="app">
-      <NotificationContainer />
       <header className="app__header">
         <h1>Yucha</h1>
         <nav className="app__tabs">
