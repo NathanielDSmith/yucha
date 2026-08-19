@@ -20,6 +20,11 @@ export function AccountManagement() {
   const [error, setError] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editBalance, setEditBalance] = useState('')
+  const [editType, setEditType] = useState<AccountType>('savings')
+  const [editValidationError, setEditValidationError] = useState<string | null>(null)
   const { currency } = useCurrencyContext()
 
   useEffect(() => {
@@ -86,6 +91,47 @@ export function AccountManagement() {
     } catch (err) {
       showToast('Failed to add account. Please try again.', 'error')
       console.error('Failed to add account:', err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  function handleEdit(account: any) {
+    setEditingId(account.id)
+    setEditName(account.name)
+    setEditBalance(String(account.balance))
+    setEditType(account.type)
+    setEditValidationError(null)
+  }
+
+  async function handleUpdateSubmit(e: FormEvent) {
+    e.preventDefault()
+    setEditValidationError(null)
+    const amount = Number(editBalance)
+
+    if (!editName.trim()) {
+      setEditValidationError('Account name is required')
+      return
+    }
+    if (!editBalance || amount < 0) {
+      setEditValidationError('Balance must be 0 or greater')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      await db.accounts.update(editingId!, {
+        name: editName.trim(),
+        balance: amount,
+        type: editType,
+        updatedAt: new Date().toISOString(),
+      })
+      showToast('Account updated successfully', 'success')
+      setEditingId(null)
+      await refresh()
+    } catch (err) {
+      showToast('Failed to update account. Please try again.', 'error')
+      console.error('Failed to update account:', err)
     } finally {
       setSubmitting(false)
     }
@@ -234,6 +280,14 @@ export function AccountManagement() {
                     <div className="account-management__actions">
                       <button
                         type="button"
+                        onClick={() => handleEdit(metric.account)}
+                        className="account-management__edit-btn"
+                        aria-label={`Edit ${metric.account.name}`}
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => deleteAccount(metric.account.id)}
                         className="account-management__delete-btn"
                         aria-label={`Delete ${metric.account.name}`}
@@ -246,6 +300,71 @@ export function AccountManagement() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {editingId && (
+        <div className="account-management__modal-overlay" onClick={() => setEditingId(null)}>
+          <div className="account-management__modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Edit Account</h2>
+            <form className="account-management__edit-form" onSubmit={handleUpdateSubmit} noValidate>
+              <label>
+                <span>Account Name</span>
+                <input
+                  type="text"
+                  placeholder="Account name"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  disabled={submitting}
+                  autoFocus
+                  aria-describedby={editValidationError ? 'edit-validation-error' : undefined}
+                />
+              </label>
+              <label>
+                <span>Balance</span>
+                <input
+                  type="number"
+                  placeholder="Balance"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={editBalance}
+                  onChange={(e) => setEditBalance(e.target.value)}
+                  disabled={submitting}
+                  aria-describedby={editValidationError ? 'edit-validation-error' : undefined}
+                />
+              </label>
+              <label>
+                <span>Account Type</span>
+                <select
+                  value={editType}
+                  onChange={(e) => setEditType(e.target.value as AccountType)}
+                  disabled={submitting}
+                >
+                  {Object.entries(ACCOUNT_TYPES).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {editValidationError && (
+                <ErrorMessage message={editValidationError} />
+              )}
+              <div className="account-management__modal-actions">
+                <button
+                  type="button"
+                  className="account-management__modal-cancel"
+                  onClick={() => setEditingId(null)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+                <button type="submit" disabled={submitting}>
+                  {submitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
