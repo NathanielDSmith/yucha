@@ -24,7 +24,7 @@ export function EmergencyFundTracker() {
       try {
         setLoading(true)
         setError(null)
-        await loadData()
+        await refresh()
       } catch (err) {
         setError('Failed to load emergency fund data. Please try again.')
         console.error('Failed to load emergency fund:', err)
@@ -35,7 +35,7 @@ export function EmergencyFundTracker() {
     load()
   }, [])
 
-  async function loadData() {
+  async function refresh() {
     try {
       const entries = await db.spendingEntries.toArray()
       setSpendingEntries(entries)
@@ -66,7 +66,7 @@ export function EmergencyFundTracker() {
       setNewGoal('')
       setValidationError(null)
       showToast('Emergency fund goal updated', 'success')
-      await loadData()
+      await refresh()
     } catch (err) {
       showToast('Failed to update goal. Please try again.', 'error')
       console.error('Failed to set emergency fund goal:', err)
@@ -80,7 +80,7 @@ export function EmergencyFundTracker() {
   }
 
   if (error) {
-    return <ErrorMessage message={error} onRetry={loadData} />
+    return <ErrorMessage message={error} onRetry={refresh} />
   }
 
   const metrics = emergencyFundGoal ? getEmergencyFundMetrics(emergencyFundGoal, spendingEntries) : null
