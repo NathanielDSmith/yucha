@@ -4,6 +4,7 @@ import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { getEmergencyFundMetrics } from '../lib/emergency'
+import { ordinal } from '../lib/dates'
 import type { Goal } from '../lib/goals'
 import type { Subscription } from '../lib/subscriptions'
 import { LoadingSpinner } from './LoadingSpinner'
@@ -72,15 +73,6 @@ export function Home({ onNavigate }: HomeProps) {
       return aDay - bDay
     })
     .slice(0, 3)
-
-  const ordinal = (n: number) => {
-    if (n % 100 >= 11 && n % 100 <= 13) return n + 'th'
-    const lastDigit = n % 10
-    if (lastDigit === 1) return n + 'st'
-    if (lastDigit === 2) return n + 'nd'
-    if (lastDigit === 3) return n + 'rd'
-    return n + 'th'
-  }
 
   return (
     <div style={{ padding: 'var(--space-2xl)' }}>

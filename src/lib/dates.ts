@@ -7,3 +7,19 @@ export function parseLocalDate(iso: string): Date {
   const [year, month, day] = iso.split('-').map(Number)
   return new Date(year, month - 1, day)
 }
+
+export function today(): string {
+  const d = new Date()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${month}-${day}`
+}
+
+export function ordinal(n: number): string {
+  if (n % 100 >= 11 && n % 100 <= 13) return n + 'th'
+  const lastDigit = n % 10
+  if (lastDigit === 1) return n + 'st'
+  if (lastDigit === 2) return n + 'nd'
+  if (lastDigit === 3) return n + 'rd'
+  return n + 'th'
+}
