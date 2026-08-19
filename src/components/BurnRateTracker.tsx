@@ -24,7 +24,7 @@ export function BurnRateTracker() {
       try {
         setLoading(true)
         setError(null)
-        await loadData()
+        await refresh()
       } catch (err) {
         setError('Failed to load burn rate data. Please try again.')
         console.error('Failed to load burn rate:', err)
@@ -35,7 +35,7 @@ export function BurnRateTracker() {
     load()
   }, [])
 
-  async function loadData() {
+  async function refresh() {
     try {
       const entries = await db.spendingEntries.toArray()
       setSpendingEntries(entries)
@@ -66,7 +66,7 @@ export function BurnRateTracker() {
       setNewBalance('')
       setValidationError(null)
       showToast('Balance updated', 'success')
-      await loadData()
+      await refresh()
     } catch (err) {
       showToast('Failed to update balance. Please try again.', 'error')
       console.error('Failed to set burn rate balance:', err)
@@ -80,7 +80,7 @@ export function BurnRateTracker() {
   }
 
   if (error) {
-    return <ErrorMessage message={error} onRetry={loadData} />
+    return <ErrorMessage message={error} onRetry={refresh} />
   }
 
   const metrics = currentBalance ? calculateBurnRateMetrics(currentBalance, spendingEntries) : null

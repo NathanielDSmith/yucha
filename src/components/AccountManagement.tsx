@@ -27,7 +27,7 @@ export function AccountManagement() {
       try {
         setLoading(true)
         setError(null)
-        await loadData()
+        await refresh()
       } catch (err) {
         setError('Failed to load accounts. Please try again.')
         console.error('Failed to load accounts:', err)
@@ -38,7 +38,7 @@ export function AccountManagement() {
     load()
   }, [])
 
-  async function loadData() {
+  async function refresh() {
     try {
       const allAccounts = await db.accounts.toArray()
       const allSpending = await db.spendingEntries.toArray()
@@ -82,7 +82,7 @@ export function AccountManagement() {
       setType('savings')
       setValidationError(null)
       showToast('Account added', 'success')
-      await loadData()
+      await refresh()
     } catch (err) {
       showToast('Failed to add account. Please try again.', 'error')
       console.error('Failed to add account:', err)
@@ -95,7 +95,7 @@ export function AccountManagement() {
     try {
       await db.accounts.delete(id)
       showToast('Account deleted', 'success')
-      await loadData()
+      await refresh()
     } catch (err) {
       showToast('Failed to delete account. Please try again.', 'error')
       console.error('Failed to delete account:', err)
@@ -107,7 +107,7 @@ export function AccountManagement() {
   }
 
   if (error) {
-    return <ErrorMessage message={error} onRetry={loadData} />
+    return <ErrorMessage message={error} onRetry={refresh} />
   }
 
   const metrics = getAllAccountMetrics(accounts, spendingEntries)
