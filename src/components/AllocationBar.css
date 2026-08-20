@@ -182,3 +182,22 @@
   color: var(--color-text-primary);
   font-weight: var(--font-weight-semibold);
 }
+
+@media (max-width: 600px) {
+  .allocation-bar {
+    padding: var(--space-lg);
+  }
+
+  .allocation-bar__legend {
+    gap: var(--space-md);
+  }
+
+  .allocation-bar__table {
+    font-size: var(--font-size-xs);
+  }
+
+  .allocation-bar__table th,
+  .allocation-bar__table td {
+    padding: var(--space-sm) var(--space-md);
+  }
+}

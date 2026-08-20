@@ -115,3 +115,21 @@
   border-left: 3px solid var(--color-accent);
   line-height: var(--line-height-relaxed);
 }
+
+@media (max-width: 600px) {
+  .quick-check__card {
+    padding: var(--space-lg);
+  }
+
+  .quick-check__form {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-check__result {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-check__input-group input {
+    min-height: 44px;
+  }
+}

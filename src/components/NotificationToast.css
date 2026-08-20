@@ -79,3 +79,19 @@
 .notification-toast__close:hover {
   opacity: 1;
 }
+
+@media (max-width: 600px) {
+  .notification-toast {
+    max-width: 90vw;
+    padding: var(--space-md);
+    font-size: var(--font-size-xs);
+  }
+
+  .notification-toast__close {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
