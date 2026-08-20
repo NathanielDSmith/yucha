@@ -104,6 +104,12 @@
   letter-spacing: 0.04em;
 }
 
+.subscriptions__card-actions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
 .subscriptions__card-header button {
   background: none;
   border: none;
@@ -112,11 +118,28 @@
   font-size: var(--font-size-lg);
   padding: 0;
   line-height: 1;
-  transition: color var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .subscriptions__card-header button:hover {
   color: var(--color-critical);
+  transform: scale(1.1);
+}
+
+.subscriptions__opportunity-btn {
+  color: var(--color-primary) !important;
+}
+
+.subscriptions__opportunity-btn:hover {
+  color: var(--color-primary-dark) !important;
+}
+
+.subscriptions__edit-btn {
+  color: var(--color-primary) !important;
+}
+
+.subscriptions__edit-btn:hover {
+  color: var(--color-primary-dark) !important;
 }
 
 .subscriptions__stats {
@@ -189,5 +212,27 @@
 
   .subscriptions__list {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .subscriptions__form {
+    grid-template-columns: 1fr;
+  }
+
+  .subscriptions__form button {
+    min-height: 44px;
+  }
+
+  .subscriptions__card-actions {
+    gap: var(--space-xs);
+  }
+
+  .subscriptions__card-header button {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
