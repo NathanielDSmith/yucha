@@ -1,9 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import type { SpendingEntry } from '../lib/spending'
+import type { SpendingCategory } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { BUDGET_CONFIG_ID, db } from '../lib/db'
 import { useToast } from '../lib/toastStore'
 import { today } from '../lib/dates'
+import { getAllCategories, getCategoryHexColor, getOrCreateCategory, seedDefaultCategories, deleteCategory } from '../lib/categoryManager'
+import { CATEGORY_COLORS } from '../lib/categoryColors'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ErrorMessage } from './ErrorMessage'
 import { EmptyState } from './EmptyState'
@@ -12,7 +15,7 @@ import './SpendingLog.css'
 export function SpendingLog() {
   const { show: showToast } = useToast()
   const [entries, setEntries] = useState<SpendingEntry[]>([])
-  const [categoryOptions, setCategoryOptions] = useState<string[]>([])
+  const [categories, setCategories] = useState<SpendingCategory[]>([])
   const [amount, setAmount] = useState('')
   const [category, setCategory] = useState('')
   const [date, setDate] = useState(today())
@@ -27,6 +30,11 @@ export function SpendingLog() {
   const [editDate, setEditDate] = useState('')
   const [editNote, setEditNote] = useState('')
   const [editValidationError, setEditValidationError] = useState<string | null>(null)
+  const [showNewCategoryModal, setShowNewCategoryModal] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [newCategoryColor, setNewCategoryColor] = useState('yellow')
+  const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false)
+  const [categoryColors, setCategoryColors] = useState<Record<string, string>>({})
 
   async function refresh() {
     try {
@@ -45,11 +53,18 @@ export function SpendingLog() {
       try {
         setLoading(true)
         setError(null)
+        await seedDefaultCategories()
         await refresh()
-        const config = await db.budgetConfig.get(BUDGET_CONFIG_ID)
-        if (config) {
-          setCategoryOptions(config.categories.map((c) => c.name).filter(Boolean))
+        const cats = await getAllCategories()
+        // Deduplicate by name
+        const unique = Array.from(new Map(cats.map((c) => [c.name, c])).values())
+        setCategories(unique)
+        // Build color map
+        const colorMap: Record<string, string> = {}
+        for (const cat of unique) {
+          colorMap[cat.name] = await getCategoryHexColor(cat.name)
         }
+        setCategoryColors(colorMap)
       } catch (err) {
         setError('Failed to load data. Please try again.')
         console.error('Failed to load spending data:', err)
@@ -59,6 +74,41 @@ export function SpendingLog() {
     }
     load()
   }, [])
+
+  function handleCategoryChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const value = e.target.value
+    if (value === '_new_category') {
+      // "+ Add new category" was selected
+      setShowNewCategoryModal(true)
+      e.target.value = '' // Reset dropdown
+    } else if (value !== '') {
+      setCategory(value)
+    }
+  }
+
+  async function handleAddCategory() {
+    if (!newCategoryName.trim()) {
+      return
+    }
+    try {
+      await getOrCreateCategory(newCategoryName.trim(), newCategoryColor)
+      const cats = await getAllCategories()
+      const unique = Array.from(new Map(cats.map((c) => [c.name, c])).values())
+      setCategories(unique)
+      // Rebuild color map
+      const colorMap: Record<string, string> = {}
+      for (const cat of unique) {
+        colorMap[cat.name] = await getCategoryHexColor(cat.name)
+      }
+      setCategoryColors(colorMap)
+      setCategory(newCategoryName.trim())
+      setShowNewCategoryModal(false)
+      setNewCategoryName('')
+      setNewCategoryColor('yellow')
+    } catch (err) {
+      console.error('Failed to create category:', err)
+    }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -76,19 +126,26 @@ export function SpendingLog() {
 
     try {
       setSubmitting(true)
+      const trimmedCategory = category.trim()
+      // Auto-create category if it doesn't exist
+      await getOrCreateCategory(trimmedCategory)
       const entry: SpendingEntry = {
         id: crypto.randomUUID(),
         amount: parsedAmount,
         date,
-        category: category.trim(),
+        category: trimmedCategory,
         note: note.trim() || undefined,
       }
       await db.spendingEntries.add(entry)
       setAmount('')
+      setCategory('')
       setNote('')
       setValidationError(null)
       showToast('Spending logged successfully', 'success')
       await refresh()
+      // Refresh categories in case a new one was created
+      const cats = await getAllCategories()
+      setCategories(cats)
     } catch (err) {
       showToast('Failed to log spending. Please try again.', 'error')
       console.error('Failed to add spending entry:', err)
@@ -173,21 +230,33 @@ export function SpendingLog() {
           aria-label="Spending amount"
           aria-describedby={validationError ? 'validation-error' : undefined}
         />
-        <input
-          type="text"
-          placeholder="Category"
-          list="spending-category-options"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          disabled={submitting}
-          aria-label="Spending category"
-          aria-describedby={validationError ? 'validation-error' : undefined}
-        />
-        <datalist id="spending-category-options">
-          {categoryOptions.map((name) => (
-            <option key={name} value={name} />
-          ))}
-        </datalist>
+        <div className="spending-log__category-input">
+          <select
+            value={category}
+            onChange={handleCategoryChange}
+            disabled={submitting}
+            aria-label="Spending category"
+            aria-describedby={validationError ? 'validation-error' : undefined}
+          >
+            <option value="">Select category...</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.name} style={{ color: categoryColors[cat.name] || 'inherit' }}>
+                {cat.name}
+              </option>
+            ))}
+            <option value="_new_category">+ Add new category</option>
+          </select>
+          <button
+            type="button"
+            className="spending-log__manage-button"
+            onClick={() => setShowManageCategoriesModal(true)}
+            disabled={submitting}
+            aria-label="Delete categories"
+            title="Delete categories"
+          >
+            ⚙
+          </button>
+        </div>
         <input
           type="date"
           value={date}
@@ -216,7 +285,15 @@ export function SpendingLog() {
           {entries.map((entry) => (
             <li key={entry.id}>
               <span className="spending-log__date">{entry.date}</span>
-              <span className="spending-log__category">{entry.category}</span>
+              <span
+                className="spending-log__category"
+                style={{
+                  borderColor: categoryColors[entry.category] || 'var(--color-primary)',
+                  backgroundColor: categoryColors[entry.category] ? `${categoryColors[entry.category]}20` : 'var(--color-primary-wash)',
+                }}
+              >
+                {entry.category}
+              </span>
               {entry.note && <span className="spending-log__note">{entry.note}</span>}
               <span className="spending-log__amount">{formatCurrency(entry.amount)}</span>
               <button
@@ -305,6 +382,105 @@ export function SpendingLog() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showManageCategoriesModal && (
+        <div className="spending-log__modal-overlay" onClick={() => setShowManageCategoriesModal(false)}>
+          <div className="spending-log__modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Delete Categories</h2>
+            <div className="spending-log__categories-list">
+              {categories.map((cat) => (
+                <div key={cat.id} className="spending-log__category-item">
+                  <div
+                    className="spending-log__category-swatch"
+                    style={{ backgroundColor: categoryColors[cat.name] || 'var(--color-primary)' }}
+                  />
+                  <span className="spending-log__category-name">{cat.name}</span>
+                  <button
+                    type="button"
+                    className="spending-log__category-delete"
+                    onClick={async () => {
+                      if (window.confirm(`Delete category "${cat.name}"?`)) {
+                        try {
+                          await deleteCategory(cat.id)
+                          const cats = await getAllCategories()
+                          const unique = Array.from(new Map(cats.map((c) => [c.name, c])).values())
+                          setCategories(unique)
+                          const colorMap: Record<string, string> = {}
+                          for (const c of unique) {
+                            colorMap[c.name] = await getCategoryHexColor(c.name)
+                          }
+                          setCategoryColors(colorMap)
+                          if (category === cat.name) {
+                            setCategory('')
+                          }
+                          showToast('Category deleted', 'success')
+                        } catch (err) {
+                          showToast('Failed to delete category', 'error')
+                        }
+                      }
+                    }}
+                    aria-label={`Delete ${cat.name}`}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="spending-log__modal-actions">
+              <button type="button" onClick={() => setShowManageCategoriesModal(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNewCategoryModal && (
+        <div className="spending-log__modal-overlay" onClick={() => setShowNewCategoryModal(false)}>
+          <div className="spending-log__modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Add New Category</h2>
+            <div className="spending-log__modal-content">
+              <input
+                type="text"
+                placeholder="Category name"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                autoFocus
+              />
+              <div className="spending-log__color-picker">
+                <label>Color:</label>
+                <div className="spending-log__color-options">
+                  {CATEGORY_COLORS.map((color) => (
+                    <button
+                      key={color.id}
+                      type="button"
+                      className={`spending-log__color-swatch ${newCategoryColor === color.id ? 'active' : ''}`}
+                      style={{ backgroundColor: color.hex }}
+                      onClick={() => setNewCategoryColor(color.id)}
+                      title={color.name}
+                      aria-label={`Select ${color.name} color`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="spending-log__modal-actions">
+              <button
+                type="button"
+                onClick={() => setShowNewCategoryModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAddCategory}
+              >
+                Create Category
+              </button>
+            </div>
           </div>
         </div>
       )}
