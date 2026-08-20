@@ -311,6 +311,7 @@ export function RecurringCosts() {
           amount={costs.find(c => c.id === opportunityCostId)?.monthlyAmount || 0}
           category={costs.find(c => c.id === opportunityCostId)?.name || ''}
           onClose={() => setOpportunityCostId(null)}
+          isRecurring={true}
         />
       )}
     </div>
