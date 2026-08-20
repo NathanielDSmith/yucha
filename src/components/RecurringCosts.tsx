@@ -8,6 +8,7 @@ import { useToast } from '../lib/toastStore'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ErrorMessage } from './ErrorMessage'
 import { RecurringCostsCalendar } from './RecurringCostsCalendar'
+import { OpportunityCostModal } from './OpportunityCostModal'
 import './Subscriptions.css'
 
 const COST_CATEGORIES = {
@@ -36,6 +37,8 @@ export function RecurringCosts() {
   const [error, setError] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [opportunityCostId, setOpportunityCostId] = useState<string | null>(null)
   const { currency } = useCurrencyContext()
   const currencySymbol = getCurrency(currency)?.symbol || '$'
 
@@ -66,6 +69,24 @@ export function RecurringCosts() {
     load()
   }, [])
 
+  function startEdit(cost: Subscription) {
+    setEditingId(cost.id)
+    setName(cost.name)
+    setCategory(Object.entries(COST_CATEGORIES).find(([_, v]) => v === cost.category)?.[0] as CostCategory || 'other')
+    setMonthlyAmount(String(cost.monthlyAmount))
+    const dayMatch = cost.startDate.match(/\d+-\d+-(\d+)/)
+    setDayOfMonth(dayMatch ? Number(dayMatch[1]) : today())
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setName('')
+    setCategory('other')
+    setMonthlyAmount('')
+    setDayOfMonth(today())
+    setValidationError(null)
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setValidationError(null)
@@ -84,24 +105,36 @@ export function RecurringCosts() {
       setSubmitting(true)
       const dateStr = `2024-01-${String(dayOfMonth).padStart(2, '0')}`
 
-      await db.subscriptions.add({
-        id: crypto.randomUUID(),
-        name: name.trim(),
-        category: COST_CATEGORIES[category],
-        monthlyAmount: amount,
-        startDate: dateStr,
-        usageCount: 0,
-      })
+      if (editingId) {
+        await db.subscriptions.update(editingId, {
+          name: name.trim(),
+          category: COST_CATEGORIES[category],
+          monthlyAmount: amount,
+          startDate: dateStr,
+        })
+        showToast('Recurring cost updated', 'success')
+      } else {
+        await db.subscriptions.add({
+          id: crypto.randomUUID(),
+          name: name.trim(),
+          category: COST_CATEGORIES[category],
+          monthlyAmount: amount,
+          startDate: dateStr,
+          usageCount: 0,
+        })
+        showToast('Recurring cost added', 'success')
+      }
+
       setName('')
       setCategory('other')
       setMonthlyAmount('')
       setDayOfMonth(today())
       setValidationError(null)
-      showToast('Recurring cost added', 'success')
+      setEditingId(null)
       await refresh()
     } catch (err) {
-      showToast('Failed to add recurring cost. Please try again.', 'error')
-      console.error('Failed to add recurring cost:', err)
+      showToast('Failed to save recurring cost. Please try again.', 'error')
+      console.error('Failed to save recurring cost:', err)
     } finally {
       setSubmitting(false)
     }
@@ -188,8 +221,13 @@ export function RecurringCosts() {
           disabled={submitting}
         />
         <button type="submit" disabled={submitting}>
-          {submitting ? 'Adding...' : 'Add'}
+          {submitting ? (editingId ? 'Updating...' : 'Adding...') : (editingId ? 'Update' : 'Add')}
         </button>
+        {editingId && (
+          <button type="button" onClick={cancelEdit} disabled={submitting}>
+            Cancel
+          </button>
+        )}
         {validationError && <ErrorMessage message={validationError} />}
       </form>
 
@@ -223,13 +261,33 @@ export function RecurringCosts() {
                       <strong>{cost.name}</strong>
                       <span className="subscriptions__category">{cost.category}</span>
                     </div>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${cost.name}`}
-                      onClick={() => remove(cost.id)}
-                    >
-                      ✕
-                    </button>
+                    <div className="subscriptions__card-actions">
+                      <button
+                        type="button"
+                        aria-label={`View investment growth of ${cost.name}`}
+                        onClick={() => setOpportunityCostId(cost.id)}
+                        className="subscriptions__opportunity-btn"
+                        title="View investment growth potential"
+                      >
+                        📈
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Edit ${cost.name}`}
+                        onClick={() => startEdit(cost)}
+                        className="subscriptions__edit-btn"
+                        title="Edit this cost"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Remove ${cost.name}`}
+                        onClick={() => remove(cost.id)}
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
                   <div className="subscriptions__stats">
                     <div>
@@ -246,6 +304,15 @@ export function RecurringCosts() {
             })}</div>
           )}
         </>
+      )}
+
+      {opportunityCostId && (
+        <OpportunityCostModal
+          amount={costs.find(c => c.id === opportunityCostId)?.monthlyAmount || 0}
+          category={costs.find(c => c.id === opportunityCostId)?.name || ''}
+          onClose={() => setOpportunityCostId(null)}
+          isRecurring={true}
+        />
       )}
     </div>
   )

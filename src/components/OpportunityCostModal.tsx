@@ -9,12 +9,17 @@ interface OpportunityCostModalProps {
   amount: number
   category: string
   onClose: () => void
+  isRecurring?: boolean
 }
 
-export function OpportunityCostModal({ amount, category, onClose }: OpportunityCostModalProps) {
+export function OpportunityCostModal({ amount, category, onClose, isRecurring }: OpportunityCostModalProps) {
   const { currency } = useCurrencyContext()
   const [dateOfBirth, setDateOfBirth] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [useAnnual, setUseAnnual] = useState(false)
+
+  const displayAmount = useAnnual ? amount * 12 : amount
+  const displayLabel = useAnnual ? 'annual cost' : (isRecurring ? 'monthly cost' : 'purchase')
 
   useEffect(() => {
     async function loadDob() {
@@ -30,21 +35,33 @@ export function OpportunityCostModal({ amount, category, onClose }: OpportunityC
     loadDob()
   }, [])
 
-  const cost = calculateOpportunityCost(amount, 7, dateOfBirth || undefined)
+  const cost = calculateOpportunityCost(displayAmount, 7, dateOfBirth || undefined)
 
   return (
     <div className="opportunity-modal-overlay" onClick={onClose}>
       <div className="opportunity-modal" onClick={(e) => e.stopPropagation()}>
         <div className="opportunity-modal__header">
           <h2>Investment Growth Potential</h2>
-          <button type="button" className="opportunity-modal__close" onClick={onClose}>
-            ✕
-          </button>
+          <div className="opportunity-modal__controls">
+            {isRecurring && (
+              <button
+                type="button"
+                className="opportunity-modal__toggle"
+                onClick={() => setUseAnnual(!useAnnual)}
+                title={useAnnual ? 'Show monthly calculation' : 'Show annual calculation'}
+              >
+                {useAnnual ? '📅 Annual' : '📅 Monthly'}
+              </button>
+            )}
+            <button type="button" className="opportunity-modal__close" onClick={onClose}>
+              ✕
+            </button>
+          </div>
         </div>
 
         <div className="opportunity-modal__content">
           <p className="opportunity-modal__intro">
-            If you invested <strong>{formatCurrency(amount, currency)}</strong> from your {category} purchase instead of
+            If you invested <strong>{formatCurrency(displayAmount, currency)}</strong> from your {category} {displayLabel} instead of
             spending it at 7% annual return:
           </p>
 
@@ -59,25 +76,25 @@ export function OpportunityCostModal({ amount, category, onClose }: OpportunityC
                 <div className="opportunity-modal__timeframe">
                   <div className="opportunity-modal__label">1 Year</div>
                   <div className="opportunity-modal__amount">{formatCurrency(cost.year1, currency)}</div>
-                  <div className="opportunity-modal__growth">+{formatCurrency(cost.year1 - amount, currency)}</div>
+                  <div className="opportunity-modal__growth">+{formatCurrency(cost.year1 - displayAmount, currency)}</div>
                 </div>
 
                 <div className="opportunity-modal__timeframe">
                   <div className="opportunity-modal__label">5 Years</div>
                   <div className="opportunity-modal__amount">{formatCurrency(cost.year5, currency)}</div>
-                  <div className="opportunity-modal__growth">+{formatCurrency(cost.year5 - amount, currency)}</div>
+                  <div className="opportunity-modal__growth">+{formatCurrency(cost.year5 - displayAmount, currency)}</div>
                 </div>
 
                 <div className="opportunity-modal__timeframe">
                   <div className="opportunity-modal__label">10 Years</div>
                   <div className="opportunity-modal__amount">{formatCurrency(cost.year10, currency)}</div>
-                  <div className="opportunity-modal__growth">+{formatCurrency(cost.year10 - amount, currency)}</div>
+                  <div className="opportunity-modal__growth">+{formatCurrency(cost.year10 - displayAmount, currency)}</div>
                 </div>
 
                 <div className="opportunity-modal__timeframe">
                   <div className="opportunity-modal__label">20 Years</div>
                   <div className="opportunity-modal__amount">{formatCurrency(cost.year20, currency)}</div>
-                  <div className="opportunity-modal__growth">+{formatCurrency(cost.year20 - amount, currency)}</div>
+                  <div className="opportunity-modal__growth">+{formatCurrency(cost.year20 - displayAmount, currency)}</div>
                 </div>
               </div>
             </div>
@@ -86,25 +103,25 @@ export function OpportunityCostModal({ amount, category, onClose }: OpportunityC
               <div className="opportunity-modal__timeframe">
                 <div className="opportunity-modal__label">1 Year</div>
                 <div className="opportunity-modal__amount">{formatCurrency(cost.year1, currency)}</div>
-                <div className="opportunity-modal__growth">+{formatCurrency(cost.year1 - amount, currency)}</div>
+                <div className="opportunity-modal__growth">+{formatCurrency(cost.year1 - displayAmount, currency)}</div>
               </div>
 
               <div className="opportunity-modal__timeframe">
                 <div className="opportunity-modal__label">5 Years</div>
                 <div className="opportunity-modal__amount">{formatCurrency(cost.year5, currency)}</div>
-                <div className="opportunity-modal__growth">+{formatCurrency(cost.year5 - amount, currency)}</div>
+                <div className="opportunity-modal__growth">+{formatCurrency(cost.year5 - displayAmount, currency)}</div>
               </div>
 
               <div className="opportunity-modal__timeframe">
                 <div className="opportunity-modal__label">10 Years</div>
                 <div className="opportunity-modal__amount">{formatCurrency(cost.year10, currency)}</div>
-                <div className="opportunity-modal__growth">+{formatCurrency(cost.year10 - amount, currency)}</div>
+                <div className="opportunity-modal__growth">+{formatCurrency(cost.year10 - displayAmount, currency)}</div>
               </div>
 
               <div className="opportunity-modal__timeframe">
                 <div className="opportunity-modal__label">20 Years</div>
                 <div className="opportunity-modal__amount">{formatCurrency(cost.year20, currency)}</div>
-                <div className="opportunity-modal__growth">+{formatCurrency(cost.year20 - amount, currency)}</div>
+                <div className="opportunity-modal__growth">+{formatCurrency(cost.year20 - displayAmount, currency)}</div>
               </div>
 
               {cost.pensionYear && (
@@ -112,7 +129,7 @@ export function OpportunityCostModal({ amount, category, onClose }: OpportunityC
                   <div className="opportunity-modal__label">Pension Year ({cost.pensionYear})</div>
                   <div className="opportunity-modal__amount">{formatCurrency(cost.pensionAmount || 0, currency)}</div>
                   <div className="opportunity-modal__growth">
-                    +{formatCurrency((cost.pensionAmount || 0) - amount, currency)}
+                    +{formatCurrency((cost.pensionAmount || 0) - displayAmount, currency)}
                   </div>
                 </div>
               )}
