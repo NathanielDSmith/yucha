@@ -8,7 +8,7 @@
 .app__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   flex-wrap: wrap;
   gap: var(--space-lg);
   max-width: var(--max-width-container);
@@ -16,6 +16,7 @@
   padding: var(--space-3xl) var(--space-lg) 0;
   width: 100%;
   border-bottom: 1px solid var(--color-border);
+  position: relative;
 }
 
 .app__header h1 {
@@ -23,6 +24,8 @@
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
+  position: absolute;
+  left: var(--space-lg);
 }
 
 .app__tabs {

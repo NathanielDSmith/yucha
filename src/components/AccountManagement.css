@@ -5,7 +5,7 @@
 }
 
 .account-management__summary {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  background: var(--color-primary);
   border-radius: var(--radius-lg);
   padding: var(--space-2xl);
   color: var(--color-text-inverse);
