@@ -1,0 +1,141 @@
+import { useEffect, useState } from 'react'
+import { db, APP_SETTINGS_ID } from '../lib/db'
+import { useCurrencyContext } from '../lib/CurrencyContext'
+import { useToast } from '../lib/toastStore'
+import { BudgetPlanner } from './BudgetPlanner'
+import { AccountManagement } from './AccountManagement'
+import './Settings.css'
+
+type SettingsTab = 'personal' | 'budget' | 'accounts'
+
+export function Settings() {
+  const { currency, setCurrency } = useCurrencyContext()
+  const { show: showToast } = useToast()
+  const [dateOfBirth, setDateOfBirth] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<SettingsTab>('personal')
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const settings = await db.appSettings.get(APP_SETTINGS_ID)
+        if (settings?.dateOfBirth) {
+          setDateOfBirth(settings.dateOfBirth)
+        }
+        setLoading(false)
+      } catch (err) {
+        setError('Failed to load settings')
+        console.error('Failed to load settings:', err)
+        setLoading(false)
+      }
+    }
+    loadSettings()
+  }, [])
+
+  async function handleDateOfBirthBlur(newDob: string) {
+    if (!newDob || newDob === dateOfBirth) {
+      return
+    }
+    try {
+      await db.appSettings.update(APP_SETTINGS_ID, { dateOfBirth: newDob })
+      showToast('Date of birth saved', 'success')
+    } catch (err) {
+      showToast('Failed to save date of birth', 'error')
+      console.error('Failed to save DOB:', err)
+    }
+  }
+
+  async function handleCurrencyChange(newCurrency: string) {
+    try {
+      setCurrency(newCurrency)
+      await db.appSettings.update(APP_SETTINGS_ID, { currency: newCurrency })
+      showToast('Currency updated', 'success')
+    } catch (err) {
+      showToast('Failed to update currency', 'error')
+      console.error('Failed to update currency:', err)
+    }
+  }
+
+  if (loading) {
+    return <div className="settings">Loading settings...</div>
+  }
+
+  return (
+    <div className="settings">
+      <div className="settings__tabs">
+        <button
+          className={activeTab === 'personal' ? 'settings__tab settings__tab--active' : 'settings__tab'}
+          onClick={() => setActiveTab('personal')}
+        >
+          Personal Info
+        </button>
+        <button
+          className={activeTab === 'budget' ? 'settings__tab settings__tab--active' : 'settings__tab'}
+          onClick={() => setActiveTab('budget')}
+        >
+          Budget
+        </button>
+        <button
+          className={activeTab === 'accounts' ? 'settings__tab settings__tab--active' : 'settings__tab'}
+          onClick={() => setActiveTab('accounts')}
+        >
+          Accounts
+        </button>
+      </div>
+
+      {activeTab === 'personal' && (
+        <>
+          <div className="settings__card">
+            <h2>Personal Information</h2>
+
+            <div className="settings__field">
+              <label htmlFor="dob">Date of Birth</label>
+              <div className="settings__input-wrapper">
+                <input
+                  id="dob"
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  onBlur={(e) => handleDateOfBirthBlur(e.target.value)}
+                />
+                <span className="settings__info-icon" title="Used to calculate your estimated pension year based on Japan's retirement age. All data stored locally on your device.">
+                  ℹ️
+                </span>
+              </div>
+              <p className="settings__help-text">
+                Used to calculate your estimated pension year based on Japan's retirement age. All data stored locally on your device — never sent to servers.
+              </p>
+            </div>
+          </div>
+
+          <div className="settings__card">
+            <h2>Currency</h2>
+
+            <div className="settings__field">
+              <label htmlFor="currency">Currency</label>
+              <select
+                id="currency"
+                value={currency}
+                onChange={(e) => handleCurrencyChange(e.target.value)}
+              >
+                <option value="USD">$ USD</option>
+                <option value="EUR">€ EUR</option>
+                <option value="GBP">£ GBP</option>
+                <option value="JPY">¥ JPY</option>
+              </select>
+              <p className="settings__help-text">
+                ⚠️ Changing currency only affects new entries. Existing amounts are not converted.
+              </p>
+            </div>
+          </div>
+
+          {error && <div className="settings__error">{error}</div>}
+        </>
+      )}
+
+      {activeTab === 'budget' && <BudgetPlanner />}
+      {activeTab === 'accounts' && <AccountManagement />}
+    </div>
+  )
+}
