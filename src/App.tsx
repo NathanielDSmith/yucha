@@ -10,7 +10,7 @@ import { BurnRateTracker } from './components/BurnRateTracker'
 import { AccountManagement } from './components/AccountManagement'
 import { ReviewReminder } from './components/ReviewReminder'
 import { Onboarding } from './components/Onboarding'
-import { CurrencySelector } from './components/CurrencySelector'
+import { Settings } from './components/Settings'
 import { Icon } from './components/Icon'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { ToastContainer } from './components/Toast'
@@ -18,7 +18,7 @@ import { ToastProvider } from './lib/toastStore'
 import { db } from './lib/db'
 import './App.css'
 
-type TabId = 'home' | 'track-spending' | 'insights-net-worth' | 'insights-emergency' | 'insights-burn-rate' | 'goals' | 'income' | 'settings-budget' | 'settings-accounts'
+type TabId = 'home' | 'track-spending' | 'insights-net-worth' | 'insights-emergency' | 'insights-burn-rate' | 'goals' | 'income' | 'settings'
 
 const MAIN_TABS = [
   { id: 'home' as const, icon: 'home' as const, title: 'Home' },
@@ -26,7 +26,7 @@ const MAIN_TABS = [
   { id: 'insights-net-worth' as const, icon: 'trending-up' as const, title: 'Insights' },
   { id: 'goals' as const, icon: 'flag' as const, title: 'Goals' },
   { id: 'income' as const, icon: 'dollar-sign' as const, title: 'Income' },
-  { id: 'settings-budget' as const, icon: 'settings' as const, title: 'Settings' },
+  { id: 'settings' as const, icon: 'settings' as const, title: 'Settings' },
 ] as const
 
 function AppContent() {
@@ -83,7 +83,6 @@ function AppContent() {
             </button>
           ))}
         </nav>
-        <CurrencySelector />
       </header>
 
       <div className="app__content">
@@ -95,8 +94,7 @@ function AppContent() {
         {tab === 'insights-burn-rate' && <BurnRateTracker />}
         {tab === 'goals' && <GoalsPlanner />}
         {tab === 'income' && <IncomeManager />}
-        {tab === 'settings-budget' && <BudgetPlanner />}
-        {tab === 'settings-accounts' && <AccountManagement />}
+        {tab === 'settings' && <Settings />}
       </div>
     </main>
   )

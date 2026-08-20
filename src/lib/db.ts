@@ -28,6 +28,7 @@ export interface AppSettings {
   currency?: CurrencyCode
   emergencyFundGoal?: number
   burnRateBalance?: number
+  dateOfBirth?: string
 }
 
 // Single-row tables, always keyed at id 1 — there is exactly one active
