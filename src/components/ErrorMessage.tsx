@@ -1,41 +1,41 @@
-export function ErrorMessage({
-  message,
-  onRetry,
-}: {
+interface ErrorMessageProps {
   message: string
   onRetry?: () => void
-}) {
+}
+
+export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
   return (
     <div
-      role="alert"
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 'var(--space-md)',
-        padding: 'var(--space-md) var(--space-lg)',
+        padding: 'var(--space-lg)',
         backgroundColor: 'var(--color-critical-wash)',
         border: '1px solid var(--color-critical)',
         borderRadius: 'var(--radius-md)',
+        textAlign: 'center',
+        minHeight: '200px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 'var(--space-md)',
       }}
     >
-      <div style={{ flex: 1 }}>
-        <p
-          style={{
-            color: 'var(--color-critical)',
-            fontSize: 'var(--font-size-sm)',
-            margin: 0,
-            lineHeight: 1.4,
-          }}
-        >
-          {message}
-        </p>
-      </div>
+      <p
+        style={{
+          color: 'var(--color-critical)',
+          fontWeight: 'var(--font-weight-semibold)',
+          fontSize: 'var(--font-size-base)',
+          margin: 0,
+        }}
+      >
+        {message}
+      </p>
       {onRetry && (
         <button
           onClick={onRetry}
           style={{
             padding: '0.5rem 1rem',
-            backgroundColor: 'var(--color-critical)',
+            backgroundColor: 'var(--color-primary)',
             color: 'var(--color-text-inverse)',
             border: 'none',
             borderRadius: 'var(--radius-md)',
@@ -43,17 +43,15 @@ export function ErrorMessage({
             fontSize: 'var(--font-size-sm)',
             fontWeight: 'var(--font-weight-semibold)',
             transition: 'all var(--transition-fast)',
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
           }}
           onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--color-critical-dark)'
+            e.currentTarget.style.backgroundColor = 'var(--color-primary-dark)'
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--color-critical)'
+            e.currentTarget.style.backgroundColor = 'var(--color-primary)'
           }}
         >
-          Retry
+          Try Again
         </button>
       )}
     </div>

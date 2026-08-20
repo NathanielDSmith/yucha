@@ -103,9 +103,27 @@
   flex-shrink: 0;
   padding: var(--space-xs) var(--space-md);
   background: var(--color-primary-wash);
-  border: 1px solid var(--color-primary);
+  border: 2px solid var(--color-primary);
   border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
+}
+
+/* Lemon Pop category colors */
+.spending-log__category:nth-of-type(3n+1) {
+  background: rgba(244, 208, 63, 0.15);
+  border-color: var(--color-primary);
+}
+
+.spending-log__category:nth-of-type(3n+2) {
+  background: rgba(30, 142, 78, 0.15);
+  border-color: var(--color-success);
+  color: #1E8E4E;
+}
+
+.spending-log__category:nth-of-type(3n) {
+  background: rgba(228, 72, 60, 0.15);
+  border-color: var(--color-accent);
+  color: #E4483C;
 }
 
 .spending-log__note {

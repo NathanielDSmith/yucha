@@ -83,12 +83,12 @@ export function Home({ onNavigate }: HomeProps) {
             animate={{ scale: 1 }}
             transition={{ delay: 0.1 }}
           >
-            {formatCurrency(totalSpending, currency)}
+            {formatCurrency(totalSpending + subscriptions.reduce((sum, s) => sum + s.monthlyAmount, 0), currency)}
           </motion.div>
         </div>
 
         <div style={{ padding: 'var(--space-lg)', background: 'var(--color-surface-1)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-          <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)' }}>Monthly Subscriptions</p>
+          <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)' }}>Monthly Recurring Costs</p>
           <motion.div
             style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-text-primary)', marginTop: 'var(--space-sm)' }}
             initial={{ scale: 0.8 }}
@@ -99,15 +99,15 @@ export function Home({ onNavigate }: HomeProps) {
           </motion.div>
         </div>
 
-        <div style={{ padding: 'var(--space-lg)', background: 'var(--color-surface-1)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+        <div style={{ padding: 'var(--space-lg)', background: emergencyFundPercent >= 100 ? 'var(--color-success-wash)' : 'var(--color-surface-1)', borderRadius: 'var(--radius-md)', border: emergencyFundPercent >= 100 ? '1px solid var(--color-success)' : '1px solid var(--color-border)' }}>
           <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)' }}>Emergency Fund</p>
           <motion.div
-            style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-text-primary)', marginTop: 'var(--space-sm)' }}
+            style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 'var(--font-weight-bold)', color: emergencyFundPercent >= 100 ? 'var(--color-success)' : 'var(--color-text-primary)', marginTop: 'var(--space-sm)' }}
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.25 }}
           >
-            {emergencyFundPercent}%
+            {emergencyFundPercent}% {emergencyFundPercent >= 100 && '✓'}
           </motion.div>
         </div>
       </motion.div>

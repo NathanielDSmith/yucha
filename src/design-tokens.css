@@ -1,66 +1,66 @@
 /* Design Tokens — centralized values for the entire design system */
 
 :root {
-  /* Color Palette — Bright, Forward-Looking, Positive */
+  /* Color Palette — Lemon Pop (Bright & Vibrant) */
 
-  /* Primary Action & Emphasis — Warm Yellow/Gold */
-  --color-primary: #f4a600;
-  --color-primary-dark: #d68f00;
-  --color-primary-light: #ffc233;
-  --color-primary-wash: rgba(244, 166, 0, 0.08);
+  /* Primary Action & Emphasis — Bright Lemon Yellow */
+  --color-primary: #F4D03F;
+  --color-primary-dark: #E8B82F;
+  --color-primary-light: #F8DC5C;
+  --color-primary-wash: rgba(244, 208, 63, 0.12);
 
-  /* Growth & Success */
-  --color-success: #39ff14;
-  --color-success-dark: #2cc60f;
-  --color-success-light: #66ff47;
-  --color-success-wash: rgba(57, 255, 20, 0.08);
+  /* Growth & Success — Bright Green */
+  --color-success: #1E8E4E;
+  --color-success-dark: #166B3E;
+  --color-success-light: #2DAE66;
+  --color-success-wash: rgba(30, 142, 78, 0.12);
 
-  /* Accent & Learning — Complementary Gold */
-  --color-accent: #f4a600;
-  --color-accent-dark: #d68f00;
-  --color-accent-light: #ffc233;
-  --color-accent-wash: rgba(244, 166, 0, 0.08);
+  /* Accent & Info — Bright Red/Warning */
+  --color-accent: #E4483C;
+  --color-accent-dark: #CC3A2D;
+  --color-accent-light: #F05D52;
+  --color-accent-wash: rgba(228, 72, 60, 0.12);
 
   /* Supporting Colors */
   --color-purple: #9d7fe8;
   --color-pink: #ff89b4;
   --color-blue: #2a78d6;
   --color-orange: #eb6834;
-  --color-green: #1baf7a;
-  --color-yellow: #eda100;
+  --color-green: #1E8E4E;
+  --color-yellow: #F4D03F;
 
-  /* Neutrals — Text & Surfaces */
-  --color-text-primary: #1a1a2e;
-  --color-text-secondary: #52514e;
-  --color-text-muted: #898781;
-  --color-text-inverse: #ffffff;
+  /* Neutrals — Text & Surfaces (Lemon Pop - Light Theme) */
+  --color-text-primary: #1F1F1F;
+  --color-text-secondary: #4A4A4A;
+  --color-text-muted: #9B9B9B;
+  --color-text-inverse: #FFFFFF;
 
-  --color-surface-1: #fcfcfb;
-  --color-surface-2: #f8f9fa;
-  --color-surface-3: #f1f2f4;
-  --color-page: #ffffff;
+  --color-surface-1: #FFFFFF;
+  --color-surface-2: #F5F5F5;
+  --color-surface-3: #EFEFEF;
+  --color-page: #FAFAFA;
 
-  --color-border: #e5e7eb;
-  --color-border-subtle: #eaeaeb;
-  --color-border-ring: rgba(26, 26, 46, 0.1);
+  --color-border: #CCCCCC;
+  --color-border-subtle: #E0E0E0;
+  --color-border-ring: rgba(31, 31, 31, 0.15);
 
   /* Status Colors */
-  --color-critical: #d03b3b;
-  --color-critical-dark: #b83030;
-  --color-critical-wash: rgba(208, 59, 59, 0.1);
-  --color-warning: #ff9500;
-  --color-warning-wash: rgba(255, 149, 0, 0.1);
+  --color-critical: #e66767;
+  --color-critical-dark: #d95555;
+  --color-critical-wash: rgba(230, 103, 103, 0.15);
+  --color-warning: #F59E0B;
+  --color-warning-wash: rgba(245, 158, 11, 0.1);
 
-  /* Categorical Series (CVD-validated, from dataviz skill) */
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  --series-3: #1baf7a;
-  --series-4: #eda100;
-  --series-5: #e87ba4;
-  --series-6: #008300;
-  --series-7: #4a3aa7;
-  --series-8: #e34948;
-  --series-other: #898781;
+  /* Categorical Series (Lemon Pop Theme) */
+  --series-1: #F4D03F;
+  --series-2: #1E8E4E;
+  --series-3: #E4483C;
+  --series-4: #1F1F1F;
+  --series-5: #F4D03F;
+  --series-6: #1E8E4E;
+  --series-7: #E4483C;
+  --series-8: #1F1F1F;
+  --series-other: #CCCCCC;
   --series-unallocated: var(--color-border);
 
   /* Typography */
@@ -125,33 +125,3 @@
   --max-width-narrow: 600px;
 }
 
-/* Dark Mode Overrides */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-text-primary: #f5f5f5;
-    --color-text-secondary: #b8b8b8;
-    --color-text-muted: #888888;
-    --color-text-inverse: #1a1a2e;
-
-    --color-surface-1: #1a1a2e;
-    --color-surface-2: #242438;
-    --color-surface-3: #2d2d42;
-    --color-page: #0d0d14;
-
-    --color-border: #3a3a4e;
-    --color-border-subtle: #2d2d42;
-    --color-border-ring: rgba(255, 255, 255, 0.1);
-
-    --series-1: #3987e5;
-    --series-2: #d95926;
-    --series-3: #199e70;
-    --series-4: #c98500;
-    --series-5: #d55181;
-    --series-6: #008300;
-    --series-7: #9085e9;
-    --series-8: #e66767;
-
-    --color-critical: #e66767;
-    --color-critical-wash: rgba(230, 103, 103, 0.15);
-  }
-}
