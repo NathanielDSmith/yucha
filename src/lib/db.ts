@@ -8,6 +8,13 @@ import type { IncomeSource } from './income'
 import type { CurrencyCode } from './currencies'
 import { DEFAULT_CURRENCY } from './currencies'
 
+export interface SpendingCategory {
+  id: string
+  name: string
+  color: string
+  createdAt: string
+}
+
 export interface BudgetConfig {
   id: number
   income: number
@@ -36,6 +43,7 @@ class YuchaDB extends Dexie {
   goals!: Table<Goal, string>
   accounts!: Table<Account, string>
   incomeSources!: Table<IncomeSource, string>
+  spendingCategories!: Table<SpendingCategory, string>
 
   constructor() {
     super('yucha')
@@ -71,6 +79,16 @@ class YuchaDB extends Dexie {
       goals: 'id, priority',
       accounts: 'id, type',
       incomeSources: 'id, type, isActive',
+    })
+    this.version(6).stores({
+      budgetConfig: 'id',
+      spendingEntries: 'id, date, category',
+      subscriptions: 'id, category',
+      appSettings: 'id',
+      goals: 'id, priority',
+      accounts: 'id, type',
+      incomeSources: 'id, type, isActive',
+      spendingCategories: 'id, name',
     })
   }
 }
