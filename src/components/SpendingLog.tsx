@@ -10,6 +10,7 @@ import { CATEGORY_COLORS } from '../lib/categoryColors'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ErrorMessage } from './ErrorMessage'
 import { EmptyState } from './EmptyState'
+import { OpportunityCostModal } from './OpportunityCostModal'
 import './SpendingLog.css'
 
 export function SpendingLog() {
@@ -35,6 +36,7 @@ export function SpendingLog() {
   const [newCategoryColor, setNewCategoryColor] = useState('yellow')
   const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false)
   const [categoryColors, setCategoryColors] = useState<Record<string, string>>({})
+  const [opportunityCostEntry, setOpportunityCostEntry] = useState<SpendingEntry | null>(null)
 
   async function refresh() {
     try {
@@ -298,6 +300,15 @@ export function SpendingLog() {
               <span className="spending-log__amount">{formatCurrency(entry.amount)}</span>
               <button
                 type="button"
+                className="spending-log__opportunity-btn"
+                aria-label={`View opportunity cost of ${entry.category} entry`}
+                onClick={() => setOpportunityCostEntry(entry)}
+                title="See how much this could grow if invested"
+              >
+                📈
+              </button>
+              <button
+                type="button"
                 className="spending-log__edit-btn"
                 aria-label={`Edit ${entry.category} entry`}
                 onClick={() => handleEdit(entry)}
@@ -483,6 +494,14 @@ export function SpendingLog() {
             </div>
           </div>
         </div>
+      )}
+
+      {opportunityCostEntry && (
+        <OpportunityCostModal
+          amount={opportunityCostEntry.amount}
+          category={opportunityCostEntry.category}
+          onClose={() => setOpportunityCostEntry(null)}
+        />
       )}
     </div>
   )

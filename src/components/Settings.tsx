@@ -12,6 +12,7 @@ export function Settings() {
   const { currency, setCurrency } = useCurrencyContext()
   const { show: showToast } = useToast()
   const [dateOfBirth, setDateOfBirth] = useState('')
+  const [dateOfBirthInput, setDateOfBirthInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<SettingsTab>('personal')
@@ -22,6 +23,7 @@ export function Settings() {
         const settings = await db.appSettings.get(APP_SETTINGS_ID)
         if (settings?.dateOfBirth) {
           setDateOfBirth(settings.dateOfBirth)
+          setDateOfBirthInput(settings.dateOfBirth)
         }
         setLoading(false)
       } catch (err) {
@@ -34,12 +36,29 @@ export function Settings() {
   }, [])
 
   async function handleDateOfBirthBlur(newDob: string) {
+    console.log('Blur fired. newDob:', newDob, 'dateOfBirth:', dateOfBirth)
     if (!newDob || newDob === dateOfBirth) {
+      console.log('Early return')
       return
     }
+    console.log('Saving DOB...')
     try {
-      await db.appSettings.update(APP_SETTINGS_ID, { dateOfBirth: newDob })
-      showToast('Date of birth saved', 'success')
+      const settings = await db.appSettings.get(APP_SETTINGS_ID)
+      console.log('Got settings:', settings)
+      if (settings) {
+        const updatedSettings = { ...settings, dateOfBirth: newDob }
+        console.log('About to put:', updatedSettings)
+        const result = await db.appSettings.put(updatedSettings)
+        console.log('Put result:', result)
+
+        // Verify immediately
+        const verify = await db.appSettings.get(APP_SETTINGS_ID)
+        console.log('Verified after save:', verify)
+
+        setDateOfBirth(newDob)
+        setDateOfBirthInput(newDob)
+        showToast('Date of birth saved', 'success')
+      }
     } catch (err) {
       showToast('Failed to save date of birth', 'error')
       console.error('Failed to save DOB:', err)
@@ -95,9 +114,13 @@ export function Settings() {
                 <input
                   id="dob"
                   type="date"
-                  value={dateOfBirth}
-                  onChange={(e) => setDateOfBirth(e.target.value)}
-                  onBlur={(e) => handleDateOfBirthBlur(e.target.value)}
+                  value={dateOfBirthInput}
+                  onChange={(e) => {
+                    setDateOfBirthInput(e.target.value)
+                  }}
+                  onBlur={(e) => {
+                    handleDateOfBirthBlur(e.target.value)
+                  }}
                 />
                 <span className="settings__info-icon" title="Used to calculate your estimated pension year based on Japan's retirement age. All data stored locally on your device.">
                   ℹ️
