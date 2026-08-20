@@ -25,3 +25,10 @@
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-wash);
 }
+
+@media (max-width: 600px) {
+  .currency-selector__select {
+    min-height: 44px;
+    padding: var(--space-md) var(--space-md);
+  }
+}

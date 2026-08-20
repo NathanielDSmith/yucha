@@ -30,3 +30,16 @@
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
+
+@media (max-width: 600px) {
+  .review-reminder {
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+  }
+
+  .review-reminder button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
