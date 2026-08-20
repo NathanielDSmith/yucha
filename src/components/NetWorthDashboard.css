@@ -5,10 +5,10 @@
 }
 
 .net-worth__hero {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  background: var(--color-primary);
   border-radius: var(--radius-lg);
   padding: var(--space-3xl) var(--space-2xl);
-  color: var(--color-text-inverse);
+  color: #1F1F1F;
   text-align: center;
 }
 
