@@ -250,6 +250,18 @@
   color: var(--color-critical);
 }
 
+.spending-log__opportunity-btn {
+  color: var(--color-primary);
+  font-size: var(--font-size-base);
+  padding: var(--space-xs) var(--space-sm);
+  transition: all var(--transition-fast);
+}
+
+.spending-log__opportunity-btn:hover {
+  color: var(--color-primary-dark);
+  transform: scale(1.1);
+}
+
 .spending-log__edit-btn {
   color: var(--color-primary);
 }
