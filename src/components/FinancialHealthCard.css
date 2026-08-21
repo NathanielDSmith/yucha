@@ -1,0 +1,101 @@
+.financial-health-card {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.financial-health-card__title {
+  margin: 0 0 var(--space-xl) 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.financial-health-card__metrics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.financial-health-card__metric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.financial-health-card__metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-md);
+}
+
+.financial-health-card__metric-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.financial-health-card__metric-detail {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.financial-health-card__progress-bar {
+  height: 8px;
+  background: var(--color-surface-2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+/* Status-specific progress bar colors */
+.financial-health-card__metric--healthy .financial-health-card__progress-bar {
+  background: rgba(30, 142, 78, 0.1);
+}
+
+.financial-health-card__metric--healthy .financial-health-card__progress-bar::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--color-success);
+  border-radius: var(--radius-full);
+}
+
+.financial-health-card__metric--warning .financial-health-card__progress-bar {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.financial-health-card__metric--warning .financial-health-card__progress-bar::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--color-warning);
+  border-radius: var(--radius-full);
+}
+
+.financial-health-card__metric--critical .financial-health-card__progress-bar {
+  background: rgba(230, 103, 103, 0.1);
+}
+
+.financial-health-card__metric--critical .financial-health-card__progress-bar::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--color-critical);
+  border-radius: var(--radius-full);
+}
+
+@media (max-width: 768px) {
+  .financial-health-card {
+    padding: var(--space-lg);
+  }
+
+  .financial-health-card__metrics {
+    gap: var(--space-lg);
+  }
+}

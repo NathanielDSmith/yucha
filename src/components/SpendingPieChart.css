@@ -1,0 +1,97 @@
+.spending-pie-chart {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.spending-pie-chart__container {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: var(--space-2xl);
+  align-items: center;
+}
+
+.spending-pie-chart__chart {
+  width: 100%;
+  max-width: 200px;
+}
+
+.spending-pie-chart__svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(var(--shadow-sm));
+}
+
+.spending-pie-chart__total-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  fill: var(--color-text-muted);
+  letter-spacing: 0.5px;
+}
+
+.spending-pie-chart__total-amount {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  fill: var(--color-text-primary);
+}
+
+.spending-pie-chart__legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.spending-pie-chart__legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.spending-pie-chart__color-box {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.spending-pie-chart__legend-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.spending-pie-chart__category-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.spending-pie-chart__category-amount {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+  margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+  .spending-pie-chart {
+    padding: var(--space-lg);
+  }
+
+  .spending-pie-chart__container {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  .spending-pie-chart__chart {
+    max-width: 160px;
+    margin: 0 auto;
+  }
+
+  .spending-pie-chart__legend {
+    gap: var(--space-sm);
+  }
+}
