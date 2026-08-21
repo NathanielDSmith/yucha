@@ -9,9 +9,8 @@ import { ErrorMessage } from './ErrorMessage'
 import { GoalsCarousel } from './GoalsCarousel'
 import { UpcomingBills } from './UpcomingBills'
 import { SpendingPieChart } from './SpendingPieChart'
-import { FinancialHealthCard } from './FinancialHealthCard'
 import { SpendingTrendSparkline } from './SpendingTrendSparkline'
-import { OpportunityCostCard } from './OpportunityCostCard'
+import { PriceChecker } from './PriceChecker'
 import './Home.css'
 
 interface HomeProps {
@@ -67,20 +66,12 @@ export function Home({ onNavigate }: HomeProps) {
       </motion.div>
 
       <div className="home__grid">
-        {/* Visual Elements Section */}
-        <div className="home__visual-section">
-          <SpendingPieChart />
-          <SpendingTrendSparkline />
-        </div>
-
-        {/* Health & Insights Section */}
-        <div className="home__insights-section">
-          <FinancialHealthCard />
-          <OpportunityCostCard />
-        </div>
+        <SpendingPieChart />
+        <SpendingTrendSparkline />
       </div>
 
-      {/* Goals & Bills Section */}
+      <PriceChecker />
+
       <div className="home__bottom-section">
         <GoalsCarousel goals={goals} currency={currency} />
         <UpcomingBills subscriptions={subscriptions} currency={currency} />

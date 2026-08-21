@@ -2,13 +2,13 @@
   background: var(--color-surface-1);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-2xl);
+  padding: var(--space-lg);
   box-shadow: var(--shadow-sm);
 }
 
 .financial-health-card__title {
-  margin: 0 0 var(--space-xl) 0;
-  font-size: var(--font-size-lg);
+  margin: 0 0 var(--space-lg) 0;
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
 }
@@ -16,7 +16,7 @@
 .financial-health-card__metrics {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2xl);
+  gap: var(--space-lg);
 }
 
 .financial-health-card__metric {

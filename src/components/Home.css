@@ -26,26 +26,8 @@
 .home__grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-2xl);
-  margin-bottom: var(--space-3xl);
-}
-
-.home__visual-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2xl);
-}
-
-.home__insights-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2xl);
-}
-
-.home__bottom-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2xl);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
 }
 
 @media (max-width: 1024px) {

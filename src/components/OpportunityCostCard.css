@@ -2,7 +2,7 @@
   background: linear-gradient(135deg, var(--color-primary) 0%, rgba(244, 208, 63, 0.8) 100%);
   border: 1px solid rgba(244, 208, 63, 0.3);
   border-radius: var(--radius-lg);
-  padding: var(--space-2xl);
+  padding: var(--space-lg);
   box-shadow: var(--shadow-md);
 }
 
