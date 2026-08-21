@@ -82,6 +82,16 @@
   box-shadow: 0 0 0 3px var(--color-primary-wash);
 }
 
+.settings__field input[type="number"]::-webkit-outer-spin-button,
+.settings__field input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.settings__field input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 .settings__info-icon {
   font-size: var(--font-size-lg);
   cursor: help;

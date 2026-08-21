@@ -4,7 +4,6 @@ import { db } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { getEmergencyFundMetrics } from '../lib/emergency'
-import type { Goal } from '../lib/goals'
 import './FinancialHealthCard.css'
 
 interface HealthMetric {

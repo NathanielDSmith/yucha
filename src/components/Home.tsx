@@ -13,11 +13,7 @@ import { SpendingTrendSparkline } from './SpendingTrendSparkline'
 import { PriceChecker } from './PriceChecker'
 import './Home.css'
 
-interface HomeProps {
-  onNavigate?: (tab: string) => void
-}
-
-export function Home({ onNavigate }: HomeProps) {
+export function Home() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const [goals, setGoals] = useState<Goal[]>([])
   const [isLoading, setIsLoading] = useState(true)

@@ -35,6 +35,6 @@ export function getGoalStatus(goal: Goal): 'completed' | 'in-progress' | 'not-st
 
 export function formatGoalProgress(current: number, target: number): string {
   const remaining = Math.max(0, target - current)
-  const pct = getGoalProgress({ id: '', name: '', targetAmount: target, currentAmount: current, category: 'other', priority: 0, createdAt: '' })
+  const pct = target > 0 ? (current / target) * 100 : 0
   return `${Math.round(pct)}% • ${remaining > 0 ? `$${remaining.toFixed(2)} to go` : 'Complete!'}`
 }

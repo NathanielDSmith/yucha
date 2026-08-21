@@ -38,10 +38,75 @@ export function SpendingLog() {
   const [categoryColors, setCategoryColors] = useState<Record<string, string>>({})
   const [opportunityCostEntry, setOpportunityCostEntry] = useState<SpendingEntry | null>(null)
 
+  // Date range filtering
+  const now = new Date()
+  const [startDate, setStartDate] = useState(
+    new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+  )
+  const [endDate, setEndDate] = useState(today())
+  const [currentPage, setCurrentPage] = useState(1)
+  const ENTRIES_PER_PAGE = 25
+
+  function getFilteredEntries() {
+    const filtered = entries.filter((entry) => {
+      return entry.date >= startDate && entry.date <= endDate
+    })
+    return filtered
+  }
+
+  function getPaginatedEntries() {
+    const filtered = getFilteredEntries()
+    const start = (currentPage - 1) * ENTRIES_PER_PAGE
+    const end = start + ENTRIES_PER_PAGE
+    return filtered.slice(start, end)
+  }
+
+  function getTotalPages() {
+    return Math.ceil(getFilteredEntries().length / ENTRIES_PER_PAGE)
+  }
+
+  function handlePreset(days: number | null) {
+    const end = today()
+    let start: string
+    if (days === null) {
+      // This month
+      start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+    } else {
+      const d = new Date()
+      d.setDate(d.getDate() - days)
+      start = d.toISOString().split('T')[0]
+    }
+    setStartDate(start)
+    setEndDate(end)
+    setCurrentPage(1)
+  }
+
+  function formatDate(isoDate: string): string {
+    const [year, month, day] = isoDate.split('-')
+    return `${month}/${day}/${year.slice(2)}`
+  }
+
+  function getDateRangeLabel() {
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    const today_str = today()
+
+    if (startDate === new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0] && endDate === today_str) {
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+      return `${months[now.getMonth()]} ${now.getFullYear()}`
+    }
+
+    return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+  }
+
   async function refresh() {
     try {
       const all = await db.spendingEntries.toArray()
-      all.sort((a, b) => b.date.localeCompare(a.date))
+      all.sort((a, b) => {
+        const dateA = String(a.date)
+        const dateB = String(b.date)
+        return dateB.localeCompare(dateA)
+      })
       setEntries(all)
       setError(null)
     } catch (err) {
@@ -271,54 +336,103 @@ export function SpendingLog() {
         {validationError && <ErrorMessage message={validationError} />}
       </form>
 
-      {entries.length === 0 ? (
-        <EmptyState message="No spending logged yet. Add your first entry above." />
+      <div className="spending-log__filter-section">
+        <div className="spending-log__filter-header">
+          <h3 className="spending-log__filter-title">{getDateRangeLabel()}</h3>
+        </div>
+        <div className="spending-log__filter-controls">
+          <button className="spending-log__preset-btn" onClick={() => handlePreset(null)}>This Month</button>
+          <button className="spending-log__preset-btn" onClick={() => handlePreset(30)}>Last 30 Days</button>
+          <button className="spending-log__preset-btn" onClick={() => handlePreset(90)}>Last 3 Months</button>
+          <div className="spending-log__date-range">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="spending-log__date-input"
+            />
+            <span className="spending-log__date-sep">–</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="spending-log__date-input"
+            />
+          </div>
+        </div>
+      </div>
+
+      {getFilteredEntries().length === 0 ? (
+        <EmptyState message="No spending logged in this period." />
       ) : (
-        <ul className="spending-log__list">
-          {entries.map((entry) => {
-            const category = categories.find((c) => c.id === entry.categoryId)
-            return (
-              <li key={entry.id}>
-                <span className="spending-log__date">{entry.date}</span>
-                <span
-                  className="spending-log__category"
-                  style={{
-                    borderColor: categoryColors[entry.categoryId] || 'var(--color-primary)',
-                    backgroundColor: categoryColors[entry.categoryId] ? `${categoryColors[entry.categoryId]}20` : 'var(--color-primary-wash)',
-                  }}
-                >
-                  {category?.name || 'Unknown'}
-                </span>
-                {entry.note && <span className="spending-log__note">{entry.note}</span>}
-                <span className="spending-log__amount">{formatCurrency(entry.amount)}</span>
-                <button
-                  type="button"
-                  className="spending-log__opportunity-btn"
-                  aria-label={`View opportunity cost of ${category?.name || 'entry'}`}
-                  onClick={() => setOpportunityCostEntry(entry)}
-                  title="See how much this could grow if invested"
-                >
-                  📈
-                </button>
-                <button
-                  type="button"
-                  className="spending-log__edit-btn"
-                  aria-label={`Edit ${category?.name || 'entry'}`}
-                  onClick={() => handleEdit(entry)}
-                >
-                  ✎
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Delete ${category?.name || 'entry'}`}
-                  onClick={() => handleDelete(entry.id)}
-                >
-                  ✕
-                </button>
-              </li>
-            )
-          })}
-        </ul>
+        <>
+          <ul className="spending-log__list">
+            {getPaginatedEntries().map((entry) => {
+              const category = categories.find((c) => c.id === entry.categoryId)
+              return (
+                <li key={entry.id}>
+                  <span className="spending-log__date">{formatDate(entry.date)}</span>
+                  <span
+                    className="spending-log__category"
+                    style={{
+                      borderColor: categoryColors[entry.categoryId] || 'var(--color-primary)',
+                      backgroundColor: categoryColors[entry.categoryId] ? `${categoryColors[entry.categoryId]}20` : 'var(--color-primary-wash)',
+                    }}
+                  >
+                    {category?.name || 'Unknown'}
+                  </span>
+                  {entry.note && <span className="spending-log__note">{entry.note}</span>}
+                  <span className="spending-log__amount">{formatCurrency(entry.amount)}</span>
+                  <button
+                    type="button"
+                    className="spending-log__opportunity-btn"
+                    aria-label={`View opportunity cost of ${category?.name || 'entry'}`}
+                    onClick={() => setOpportunityCostEntry(entry)}
+                    title="See how much this could grow if invested"
+                  >
+                    📈
+                  </button>
+                  <button
+                    type="button"
+                    className="spending-log__edit-btn"
+                    aria-label={`Edit ${category?.name || 'entry'}`}
+                    onClick={() => handleEdit(entry)}
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Delete ${category?.name || 'entry'}`}
+                    onClick={() => handleDelete(entry.id)}
+                  >
+                    ✕
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+          {getTotalPages() > 1 && (
+            <div className="spending-log__pagination">
+              <button
+                className="spending-log__pagination-btn"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+              >
+                ← Previous
+              </button>
+              <span className="spending-log__pagination-info">
+                Page {currentPage} of {getTotalPages()}
+              </span>
+              <button
+                className="spending-log__pagination-btn"
+                onClick={() => setCurrentPage(Math.min(getTotalPages(), currentPage + 1))}
+                disabled={currentPage === getTotalPages()}
+              >
+                Next →
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {editingId && (
