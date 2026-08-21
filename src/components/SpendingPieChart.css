@@ -1,0 +1,105 @@
+.spending-pie-chart {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.spending-pie-chart__wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spending-pie-chart__svg {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(var(--shadow-sm));
+}
+
+.spending-pie-chart__segment {
+  transition: opacity var(--transition-fast);
+}
+
+.spending-pie-chart__segment:hover .spending-pie-chart__path {
+  filter: brightness(1.1);
+}
+
+.spending-pie-chart__path {
+  transition: all var(--transition-base);
+}
+
+.spending-pie-chart__total-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  fill: var(--color-text-muted);
+  letter-spacing: 0.5px;
+}
+
+.spending-pie-chart__total-amount {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  fill: var(--color-text-primary);
+}
+
+.spending-pie-chart__tooltip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-page);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  text-align: center;
+  pointer-events: none;
+  box-shadow: var(--shadow-lg);
+  z-index: 10;
+  min-width: 150px;
+}
+
+.spending-pie-chart__tooltip-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.spending-pie-chart__tooltip-amount {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.spending-pie-chart__tooltip-percentage {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+  .spending-pie-chart {
+    padding: var(--space-lg);
+  }
+
+  .spending-pie-chart__container {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  .spending-pie-chart__chart {
+    max-width: 160px;
+    margin: 0 auto;
+  }
+
+  .spending-pie-chart__legend {
+    gap: var(--space-sm);
+  }
+}
