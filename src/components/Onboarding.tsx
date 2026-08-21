@@ -101,7 +101,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
       const settings = await db.appSettings.get(1)
       await db.appSettings.put({
         id: 1,
-        lastReviewedAt: settings?.lastReviewedAt || new Date(),
+        lastReviewedAt: settings?.lastReviewedAt || new Date().toISOString(),
         onboardingComplete: true,
       })
       onComplete()

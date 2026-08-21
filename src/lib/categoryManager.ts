@@ -43,8 +43,25 @@ export async function getCategoryHexColor(categoryName: string): Promise<string>
   return category ? getCategoryColor(category.color) : getCategoryColor('yellow')
 }
 
-export async function deleteCategory(categoryId: string): Promise<void> {
+export async function getCategoryUsageCount(categoryName: string): Promise<number> {
+  const count = await db.spendingEntries.where('category').equals(categoryName).count()
+  const subCount = await db.subscriptions.where('category').equals(categoryName).count()
+  return count + subCount
+}
+
+export async function deleteCategory(categoryId: string): Promise<{ success: boolean; usageCount: number }> {
+  const category = await db.spendingCategories.get(categoryId)
+  if (!category) {
+    return { success: false, usageCount: 0 }
+  }
+
+  const usageCount = await getCategoryUsageCount(category.name)
+  if (usageCount > 0) {
+    return { success: false, usageCount }
+  }
+
   await db.spendingCategories.delete(categoryId)
+  return { success: true, usageCount: 0 }
 }
 
 // Default spending categories to seed if table is empty

@@ -5,7 +5,7 @@ import { formatCurrency } from '../lib/currency'
 import { BUDGET_CONFIG_ID, db } from '../lib/db'
 import { useToast } from '../lib/toastStore'
 import { today } from '../lib/dates'
-import { getAllCategories, getCategoryHexColor, getOrCreateCategory, seedDefaultCategories, deleteCategory } from '../lib/categoryManager'
+import { getAllCategories, getCategoryHexColor, getOrCreateCategory, seedDefaultCategories, deleteCategory, getCategoryUsageCount } from '../lib/categoryManager'
 import { CATEGORY_COLORS } from '../lib/categoryColors'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ErrorMessage } from './ErrorMessage'
@@ -413,24 +413,32 @@ export function SpendingLog() {
                     type="button"
                     className="spending-log__category-delete"
                     onClick={async () => {
-                      if (window.confirm(`Delete category "${cat.name}"?`)) {
-                        try {
-                          await deleteCategory(cat.id)
-                          const cats = await getAllCategories()
-                          const unique = Array.from(new Map(cats.map((c) => [c.name, c])).values())
-                          setCategories(unique)
-                          const colorMap: Record<string, string> = {}
-                          for (const c of unique) {
-                            colorMap[c.name] = await getCategoryHexColor(c.name)
-                          }
-                          setCategoryColors(colorMap)
-                          if (category === cat.name) {
-                            setCategory('')
-                          }
-                          showToast('Category deleted', 'success')
-                        } catch (err) {
-                          showToast('Failed to delete category', 'error')
+                      try {
+                        const usageCount = await getCategoryUsageCount(cat.name)
+                        if (usageCount > 0) {
+                          showToast(`Cannot delete "${cat.name}" — it has ${usageCount} entries. Remove or reassign them first.`, 'error')
+                          return
                         }
+                        if (window.confirm(`Delete category "${cat.name}"?`)) {
+                          const result = await deleteCategory(cat.id)
+                          if (result.success) {
+                            const cats = await getAllCategories()
+                            const unique = Array.from(new Map(cats.map((c) => [c.name, c])).values())
+                            setCategories(unique)
+                            const colorMap: Record<string, string> = {}
+                            for (const c of unique) {
+                              colorMap[c.name] = await getCategoryHexColor(c.name)
+                            }
+                            setCategoryColors(colorMap)
+                            if (category === cat.name) {
+                              setCategory('')
+                            }
+                            showToast('Category deleted', 'success')
+                          }
+                        }
+                      } catch (err) {
+                        showToast('Failed to delete category', 'error')
+                        console.error('Delete category error:', err)
                       }
                     }}
                     aria-label={`Delete ${cat.name}`}

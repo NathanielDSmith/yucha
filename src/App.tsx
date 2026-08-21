@@ -44,11 +44,17 @@ function AppContent() {
 
   useEffect(() => {
     async function checkOnboarding() {
-      const settings = await db.appSettings.get(1)
-      if (settings?.onboardingComplete) {
+      try {
+        const settings = await db.appSettings.get(1)
+        if (settings?.onboardingComplete) {
+          setShowOnboarding(false)
+        }
+      } catch (err) {
+        console.error('Failed to load app settings:', err)
         setShowOnboarding(false)
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
     checkOnboarding()
   }, [])

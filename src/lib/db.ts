@@ -23,7 +23,7 @@ export interface BudgetConfig {
 
 export interface AppSettings {
   id: number
-  lastReviewedAt: Date
+  lastReviewedAt: string
   onboardingComplete?: boolean
   currency?: CurrencyCode
   emergencyFundGoal?: number
