@@ -283,7 +283,6 @@ export function SpendingLog() {
           step="0.01"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          autoFocus
           disabled={submitting}
           aria-label="Spending amount"
           aria-describedby={validationError ? 'validation-error' : undefined}
