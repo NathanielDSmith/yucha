@@ -55,24 +55,17 @@ export function Settings() {
   }, [])
 
   async function handleDateOfBirthBlur(newDob: string) {
-    console.log('Blur fired. newDob:', newDob, 'dateOfBirth:', dateOfBirth)
     if (!newDob || newDob === dateOfBirth) {
-      console.log('Early return')
       return
     }
-    console.log('Saving DOB...')
     try {
       const settings = await db.appSettings.get(APP_SETTINGS_ID)
-      console.log('Got settings:', settings)
       if (settings) {
         const updatedSettings = { ...settings, dateOfBirth: newDob }
-        console.log('About to put:', updatedSettings)
-        const result = await db.appSettings.put(updatedSettings)
-        console.log('Put result:', result)
+        await db.appSettings.put(updatedSettings)
 
         // Verify immediately
         const verify = await db.appSettings.get(APP_SETTINGS_ID)
-        console.log('Verified after save:', verify)
 
         setDateOfBirth(newDob)
         setDateOfBirthInput(newDob)

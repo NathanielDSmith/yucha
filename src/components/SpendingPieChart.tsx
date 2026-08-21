@@ -101,7 +101,7 @@ export function SpendingPieChart() {
       transition={{ duration: 0.5, delay: 0.1 }}
     >
       <ResponsiveContainer width="100%" height={348}>
-        <PieChart margin={{ top: 80, right: 20, bottom: 70, left: 20 }}>
+        <PieChart margin={{ top: 80, right: 20, bottom: 30, left: 20 }}>
           <Pie
             data={data}
             cx="50%"
