@@ -58,51 +58,63 @@ export function PriceChecker() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <h3 className="price-checker__title">Price Checker</h3>
-      <p className="price-checker__subtitle">See what a purchase could be worth by retirement</p>
-
-      <div className="price-checker__input-group">
-        <input
-          type="number"
-          inputMode="decimal"
-          step="0.01"
-          min="0"
-          placeholder="0.00"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="price-checker__input"
-        />
-        <span className="price-checker__currency">{currency}</span>
+      <div className="price-checker__header">
+        <h3 className="price-checker__title">Price Checker</h3>
+        <p className="price-checker__subtitle">See what a purchase could be worth by retirement</p>
       </div>
 
-      {results.length > 0 && (
-        <div className="price-checker__timeline">
-          {results.map((result, idx) => (
-            <motion.div
-              key={result.years}
-              className="price-checker__timeframe"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.05 }}
-            >
-              <div className="price-checker__timeframe-label">
-                {result.years === 65 || (dateOfBirth && result.years > 20)
-                  ? 'Pension Age'
-                  : `${result.years} Year${result.years !== 1 ? 's' : ''}`}
-              </div>
-              <div className="price-checker__timeframe-value">
-                {formatCurrency(result.value, currency)}
-              </div>
-            </motion.div>
-          ))}
+      <div className="price-checker__content">
+        <div className="price-checker__input-section">
+          <div className="price-checker__input-group">
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min="0"
+              placeholder="0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="price-checker__input"
+            />
+            <span className="price-checker__currency">{currency}</span>
+          </div>
         </div>
-      )}
 
-      {!results.length && amount && (
-        <div className="price-checker__empty">
-          Enter an amount to see projections
+        <div className="price-checker__results-section">
+          <div className="price-checker__timeline">
+            {[1, 5, 10, 20].map((years, idx) => {
+              const result = results.find((r) => r.years === years)
+              return (
+                <motion.div
+                  key={years}
+                  className="price-checker__timeframe"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <div className="price-checker__timeframe-label">{years} Year{years !== 1 ? 's' : ''}</div>
+                  <div className="price-checker__timeframe-value">
+                    {result ? formatCurrency(result.value, currency) : '—'}
+                  </div>
+                </motion.div>
+              )
+            })}
+            {dateOfBirth && (
+              <motion.div
+                className="price-checker__timeframe"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="price-checker__timeframe-label">Pension Age</div>
+                <div className="price-checker__timeframe-value">
+                  {results.find((r) => r.years > 20) ? formatCurrency(results.find((r) => r.years > 20)!.value, currency) : '—'}
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </motion.div>
   )
 }

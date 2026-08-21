@@ -2,12 +2,16 @@
   background: var(--color-surface-1);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-lg);
+  padding: var(--space-md);
   box-shadow: var(--shadow-sm);
+  height: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 
 .spending-trend-sparkline__title {
-  margin: 0 0 var(--space-md) 0;
+  margin: 0 0 var(--space-sm) 0;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
@@ -15,8 +19,8 @@
 
 .spending-trend-sparkline__chart {
   width: 100%;
-  height: 60px;
-  margin-bottom: var(--space-md);
+  height: 25px;
+  margin-bottom: var(--space-xs);
 }
 
 .spending-trend-sparkline__svg {
@@ -27,13 +31,13 @@
 .spending-trend-sparkline__stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-lg);
+  gap: var(--space-sm);
 }
 
 .spending-trend-sparkline__stat {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 2px;
 }
 
 .spending-trend-sparkline__stat-label {

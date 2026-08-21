@@ -37,7 +37,6 @@ export function GoalsCarousel({ goals, currency = 'USD' as CurrencyCode }: Goals
         background: 'var(--color-surface-1)',
         borderRadius: 'var(--radius-md)',
         border: '1px solid var(--color-border)',
-        marginBottom: 'var(--space-3xl)',
       }}
     >
       <p style={{ margin: '0 0 var(--space-md) 0', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>

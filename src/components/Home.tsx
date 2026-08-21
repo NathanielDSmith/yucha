@@ -8,7 +8,7 @@ import { LoadingSpinner } from './LoadingSpinner'
 import { ErrorMessage } from './ErrorMessage'
 import { GoalsCarousel } from './GoalsCarousel'
 import { UpcomingBills } from './UpcomingBills'
-import { SpendingTreemap } from './SpendingTreemap'
+import { SpendingPieChart } from './SpendingPieChart'
 import { SpendingTrendSparkline } from './SpendingTrendSparkline'
 import { PriceChecker } from './PriceChecker'
 import './Home.css'
@@ -66,14 +66,16 @@ export function Home({ onNavigate }: HomeProps) {
       </motion.div>
 
       <div className="home__grid">
-        <SpendingTreemap />
-        <SpendingTrendSparkline />
+        <SpendingPieChart />
+        <div className="home__grid-right">
+          <SpendingTrendSparkline />
+          <GoalsCarousel goals={goals} currency={currency} />
+        </div>
       </div>
 
       <PriceChecker />
 
       <div className="home__bottom-section">
-        <GoalsCarousel goals={goals} currency={currency} />
         <UpcomingBills subscriptions={subscriptions} currency={currency} />
       </div>
     </div>

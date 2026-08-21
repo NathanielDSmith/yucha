@@ -39,11 +39,11 @@ export const CATEGORY_COLORS = [
   { id: 'brown', hex: '#8b4513', name: 'Brown' },
   { id: 'silver', hex: '#c0c0c0', name: 'Silver' },
   { id: 'gold-bright', hex: '#ffd700', name: 'Bright Gold' },
-  { id: 'white', hex: '#f5f5f5', name: 'Pearl White' },
   { id: 'hotpink', hex: '#ff69b4', name: 'Hot Pink' },
   { id: 'turquoise', hex: '#00ced1', name: 'Turquoise' },
   { id: 'orchid', hex: '#9932cc', name: 'Dark Orchid' },
   { id: 'darkorange', hex: '#ff8c00', name: 'Dark Orange' },
+  { id: 'crimson', hex: '#dc143c', name: 'Crimson' },
 ]
 
 // Get hex color from color name (for existing category color strings)
