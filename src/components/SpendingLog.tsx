@@ -504,7 +504,7 @@ export function SpendingLog() {
       {opportunityCostEntry && (
         <OpportunityCostModal
           amount={opportunityCostEntry.amount}
-          category={opportunityCostEntry.category}
+          category={categories.find((c) => c.id === opportunityCostEntry.categoryId)?.name || 'Unknown'}
           onClose={() => setOpportunityCostEntry(null)}
         />
       )}

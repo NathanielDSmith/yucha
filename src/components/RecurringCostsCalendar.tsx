@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { db } from '../lib/db'
+import { db, type SpendingCategory } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import type { Subscription } from '../lib/subscriptions'
@@ -7,6 +7,7 @@ import './RecurringCostsCalendar.css'
 
 export function RecurringCostsCalendar() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
+  const [categories, setCategories] = useState<SpendingCategory[]>([])
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
   const { currency } = useCurrencyContext()
@@ -18,6 +19,8 @@ export function RecurringCostsCalendar() {
   async function refresh() {
     const all = await db.subscriptions.toArray()
     setSubscriptions(all)
+    const cats = await db.spendingCategories.toArray()
+    setCategories(cats)
   }
 
   // Get days in month
@@ -136,7 +139,7 @@ export function RecurringCostsCalendar() {
                       {formatCurrency(bill.monthlyAmount, currency)}
                     </span>
                   </div>
-                  <span className="recurring-costs-calendar__bill-category">{bill.category}</span>
+                  <span className="recurring-costs-calendar__bill-category">{categories.find((c) => c.id === bill.categoryId)?.name || 'Unknown'}</span>
                 </div>
               ))}
             </div>
