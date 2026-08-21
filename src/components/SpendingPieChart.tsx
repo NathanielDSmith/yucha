@@ -5,6 +5,7 @@ import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { sumByCategory, startOfMonth } from '../lib/spending'
 import { filterByDateRange } from '../lib/spending'
+import { getPieChartColor } from '../lib/colors'
 import type { Subscription } from '../lib/subscriptions'
 import './SpendingPieChart.css'
 
@@ -61,6 +62,7 @@ export function SpendingPieChart() {
         const categoryMap = new Map(categories.map((c) => [c.id, c]))
         let grandTotal = 0
         const items: PieSegment[] = []
+        let categoryIndex = 0
 
         categoryTotals.forEach((amount, categoryId) => {
           const cat = categoryMap.get(categoryId)
@@ -70,9 +72,10 @@ export function SpendingPieChart() {
               name: cat.name,
               amount,
               percentage: 0, // Will calculate after summing
-              color: cat.color,
+              color: getPieChartColor(categoryIndex, categoryId),
             })
             grandTotal += amount
+            categoryIndex++
           }
         })
 

@@ -1,5 +1,5 @@
 import { db, type SpendingCategory } from './db'
-import { getCategoryColor } from './categoryColors'
+import { getCategoryColor } from './colors'
 
 export async function getOrCreateCategory(name: string, colorId?: string): Promise<SpendingCategory> {
   const trimmedName = name.trim()
