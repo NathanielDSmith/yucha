@@ -10,6 +10,9 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
+  private unhandledRejectionHandler: ((event: PromiseRejectionEvent) => void) | null = null
+  private unhandledErrorHandler: ((event: ErrorEvent) => void) | null = null
+
   constructor(props: Props) {
     super(props)
     this.state = { hasError: false, error: null }
@@ -21,6 +24,33 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error) {
     console.error('Error boundary caught:', error)
+  }
+
+  componentDidMount() {
+    this.unhandledRejectionHandler = (event: PromiseRejectionEvent) => {
+      const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason))
+      console.error('Unhandled promise rejection:', error)
+      this.setState({ hasError: true, error })
+      event.preventDefault()
+    }
+
+    this.unhandledErrorHandler = (event: ErrorEvent) => {
+      console.error('Unhandled error:', event.error)
+      this.setState({ hasError: true, error: event.error || new Error(event.message) })
+      event.preventDefault()
+    }
+
+    window.addEventListener('unhandledrejection', this.unhandledRejectionHandler)
+    window.addEventListener('error', this.unhandledErrorHandler)
+  }
+
+  componentWillUnmount() {
+    if (this.unhandledRejectionHandler) {
+      window.removeEventListener('unhandledrejection', this.unhandledRejectionHandler)
+    }
+    if (this.unhandledErrorHandler) {
+      window.removeEventListener('error', this.unhandledErrorHandler)
+    }
   }
 
   handleRetry = () => {
