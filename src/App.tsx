@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Home } from './components/Home'
 import { SpendingHub } from './components/SpendingHub'
 import { GoalsPlanner } from './components/GoalsPlanner'
-import { IncomeManager } from './components/IncomeManager'
 import { NetWorthDashboard } from './components/NetWorthDashboard'
 import { EmergencyFundTracker } from './components/EmergencyFundTracker'
 import { BurnRateTracker } from './components/BurnRateTracker'
@@ -23,7 +22,6 @@ const MAIN_TABS = [
   { id: 'track-spending' as const, icon: 'send' as const, title: 'Spending' },
   { id: 'insights-net-worth' as const, icon: 'trending-up' as const, title: 'Insights' },
   { id: 'goals' as const, icon: 'flag' as const, title: 'Goals' },
-  { id: 'income' as const, icon: 'dollar-sign' as const, title: 'Income' },
   { id: 'settings' as const, icon: 'settings' as const, title: 'Settings' },
 ] as const
 
@@ -97,7 +95,6 @@ function AppContent() {
         {tab === 'insights-emergency' && <EmergencyFundTracker />}
         {tab === 'insights-burn-rate' && <BurnRateTracker />}
         {tab === 'goals' && <GoalsPlanner />}
-        {tab === 'income' && <IncomeManager />}
         {tab === 'settings' && <Settings />}
       </div>
     </main>

@@ -16,6 +16,7 @@ export function Settings() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [dateOfBirthInput, setDateOfBirthInput] = useState('')
+  const [monthlyIncome, setMonthlyIncome] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<SettingsTab>('personal')
@@ -29,6 +30,9 @@ export function Settings() {
         if (settings?.dateOfBirth) {
           setDateOfBirth(settings.dateOfBirth)
           setDateOfBirthInput(settings.dateOfBirth)
+        }
+        if (settings?.monthlyIncome) {
+          setMonthlyIncome(String(settings.monthlyIncome))
         }
         setLoading(false)
       } catch (err) {
@@ -79,6 +83,25 @@ export function Settings() {
     } catch (err) {
       showToast('Failed to update currency', 'error')
       console.error('Failed to update currency:', err)
+    }
+  }
+
+  async function handleMonthlyIncomeChange(newIncome: string) {
+    if (!newIncome) {
+      setMonthlyIncome('')
+      return
+    }
+    const amount = Number(newIncome)
+    if (isNaN(amount) || amount < 0) {
+      return
+    }
+    setMonthlyIncome(newIncome)
+    try {
+      await db.appSettings.update(APP_SETTINGS_ID, { monthlyIncome: amount })
+      showToast('Monthly income updated', 'success')
+    } catch (err) {
+      showToast('Failed to update income', 'error')
+      console.error('Failed to update income:', err)
     }
   }
 
@@ -172,6 +195,28 @@ export function Settings() {
               </div>
               <p className="settings__help-text">
                 Used to calculate your estimated pension year based on Japan's retirement age. All data stored locally on your device — never sent to servers.
+              </p>
+            </div>
+
+            <div className="settings__field">
+              <label htmlFor="income">Monthly Income</label>
+              <div className="settings__input-wrapper">
+                <input
+                  id="income"
+                  type="number"
+                  inputMode="decimal"
+                  step="0.01"
+                  min="0"
+                  placeholder="Your monthly income"
+                  value={monthlyIncome}
+                  onChange={(e) => handleMonthlyIncomeChange(e.target.value)}
+                />
+                <span className="settings__info-icon" title="Used to calculate budget allocation and other financial metrics. All data stored locally on your device.">
+                  ℹ️
+                </span>
+              </div>
+              <p className="settings__help-text">
+                Used to calculate budget allocation and emergency fund targets. All data stored locally on your device — never sent to servers.
               </p>
             </div>
           </div>
