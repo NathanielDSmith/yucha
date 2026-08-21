@@ -30,6 +30,7 @@ export interface AppSettings {
   emergencyFundGoal?: number
   burnRateBalance?: number
   dateOfBirth?: string
+  monthlyIncome?: number
 }
 
 // Single-row tables, always keyed at id 1 — there is exactly one active
