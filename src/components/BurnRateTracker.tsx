@@ -156,7 +156,7 @@ export function BurnRateTracker() {
             <div className="burn-rate__metric-card">
               <p className="burn-rate__metric-label">Current Balance</p>
               <p className="burn-rate__metric-value">
-                {formatCurrency(currentBalance, currency)}
+                {currentBalance ? formatCurrency(currentBalance, currency) : '$0.00'}
               </p>
             </div>
           </div>

@@ -1,17 +1,17 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { db } from '../lib/db'
+import { db, type SpendingEntry } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { useToast } from '../lib/toastStore'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ErrorMessage } from './ErrorMessage'
-import { getEmergencyFundMetrics, RECOMMENDED_MONTHS, MINIMUM_MONTHS } from '../lib/emergency'
+import { getEmergencyFundMetrics, RECOMMENDED_MONTHS } from '../lib/emergency'
 import './EmergencyFundTracker.css'
 
 export function EmergencyFundTracker() {
   const { show: showToast } = useToast()
   const [emergencyFundGoal, setEmergencyFundGoal] = useState<number | null>(null)
-  const [spendingEntries, setSpendingEntries] = useState([])
+  const [spendingEntries, setSpendingEntries] = useState<SpendingEntry[]>([])
   const [newGoal, setNewGoal] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -125,7 +125,7 @@ export function EmergencyFundTracker() {
                 <p className="emergency-fund__status-text">
                   {metrics.isAdequate
                     ? '✓ You\'re covered for 6+ months'
-                    : `⚠ Need ${(RECOMMENDED_MONTHS * (emergencyFundGoal / (emergencyFundGoal / metrics.monthsOfRunway)) - emergencyFundGoal).toFixed(0)} more`}
+                    : `⚠ Need ${emergencyFundGoal ? (RECOMMENDED_MONTHS * (emergencyFundGoal / (emergencyFundGoal / metrics.monthsOfRunway)) - emergencyFundGoal).toFixed(0) : '?'} more`}
                 </p>
               </div>
             </div>
@@ -135,16 +135,16 @@ export function EmergencyFundTracker() {
             <div className="emergency-fund__metric-card">
               <p className="emergency-fund__metric-label">Emergency Fund</p>
               <p className="emergency-fund__metric-value">
-                {formatCurrency(emergencyFundGoal, currency)}
+                {emergencyFundGoal ? formatCurrency(emergencyFundGoal, currency) : '$0.00'}
               </p>
             </div>
             <div className="emergency-fund__metric-card">
               <p className="emergency-fund__metric-label">Monthly Spending</p>
               <p className="emergency-fund__metric-value">
-                {formatCurrency(
+                {emergencyFundGoal ? formatCurrency(
                   emergencyFundGoal / metrics.monthsOfRunway,
                   currency,
-                )}
+                ) : '$0.00'}
               </p>
             </div>
             <div className="emergency-fund__metric-card">

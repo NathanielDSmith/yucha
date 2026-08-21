@@ -6,7 +6,8 @@ import type { Goal } from './goals'
 import type { Account } from './accounts'
 import type { IncomeSource } from './income'
 import type { CurrencyCode } from './currencies'
-import { DEFAULT_CURRENCY } from './currencies'
+
+export type { SpendingEntry, Account }
 
 export interface SpendingCategory {
   id: string
