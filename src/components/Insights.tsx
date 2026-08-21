@@ -3,7 +3,7 @@ import { calculateBudget, type BudgetCategory } from '../lib/budget'
 import { DEFAULT_ANNUAL_RETURN_RATE } from '../lib/compounding'
 import { formatCurrency } from '../lib/currency'
 import { parseLocalDate } from '../lib/dates'
-import { BUDGET_CONFIG_ID, db } from '../lib/db'
+import { BUDGET_CONFIG_ID, db, type SpendingCategory } from '../lib/db'
 import { buildRetrospective } from '../lib/retrospective'
 import {
   filterByDateRange,
@@ -27,6 +27,7 @@ const PERIOD_LABELS: Record<RetrospectivePeriod, string> = {
 export function Insights() {
   const [income, setIncome] = useState(0)
   const [categories, setCategories] = useState<BudgetCategory[]>([])
+  const [spendingCategories, setSpendingCategories] = useState<SpendingCategory[]>([])
   const [entries, setEntries] = useState<SpendingEntry[]>([])
   const [subs, setSubs] = useState<Subscription[]>([])
   const [period, setPeriod] = useState<RetrospectivePeriod>('month')
@@ -49,6 +50,8 @@ export function Insights() {
         setEntries(allEntries)
         const allSubs = await db.subscriptions.toArray()
         setSubs(allSubs)
+        const allSpendingCats = await db.spendingCategories.toArray()
+        setSpendingCategories(allSpendingCats)
       } catch (err) {
         setError('Failed to load insights data. Please try again.')
         console.error('Failed to load insights:', err)
@@ -63,12 +66,17 @@ export function Insights() {
 
   const comparison = useMemo(() => {
     const monthEntries = filterByDateRange(entries, periodStart('month'), new Date())
-    const actualTotals = new Map(sumByCategory(monthEntries).map((c) => [c.category, c.total]))
+    // Create a map from category name to total
+    const categoryIdMap = new Map(spendingCategories.map((c) => [c.id, c.name]))
+    const actualTotals = new Map(
+      sumByCategory(monthEntries).map((c) => [categoryIdMap.get(c.categoryId) || 'Unknown', c.total])
+    )
 
     const today = new Date()
     for (const sub of subs) {
       if (parseLocalDate(sub.startDate) > today) continue
-      actualTotals.set(sub.category, (actualTotals.get(sub.category) ?? 0) + sub.monthlyAmount)
+      const catName = categoryIdMap.get(sub.categoryId) || 'Unknown'
+      actualTotals.set(catName, (actualTotals.get(catName) ?? 0) + sub.monthlyAmount)
     }
 
     const names = new Set<string>([
@@ -81,7 +89,7 @@ export function Insights() {
       const actual = actualTotals.get(name) ?? 0
       return { name, planned, actual, difference: planned - actual }
     }).sort((a, b) => b.actual - a.actual)
-  }, [budget, entries, subs])
+  }, [budget, entries, subs, spendingCategories])
 
   const retrospective = useMemo(
     () => buildRetrospective(entries, period, years, ratePercent / 100),

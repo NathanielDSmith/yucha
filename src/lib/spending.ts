@@ -14,6 +14,12 @@ export interface CategoryTotal {
   total: number
 }
 
+export interface CategoryNameTotal {
+  categoryName: string
+  categoryId: string
+  total: number
+}
+
 export function sumByCategory(entries: SpendingEntry[]): CategoryTotal[] {
   const totals = new Map<string, number>()
   for (const entry of entries) {
