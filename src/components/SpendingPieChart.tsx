@@ -14,6 +14,13 @@ interface PieSegment {
   amount: number
   percentage: number
   color: string
+  startAngle: number
+  endAngle: number
+  sliceAngle: number
+}
+
+interface HoverState {
+  categoryId: string | null
 }
 
 export function SpendingPieChart() {
@@ -99,24 +106,33 @@ export function SpendingPieChart() {
     })
   }, [segments])
 
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+
   if (loading || segments.length === 0) {
     return null
   }
 
-  const radius = 60
-  const cx = 100
-  const cy = 100
+  const outerRadius = 120
+  const innerRadius = 70
+  const cx = 150
+  const cy = 150
 
-  const pathData = (start: number, end: number) => {
+  const pathData = (start: number, end: number, outer: number, inner: number) => {
     const startRad = (start * Math.PI) / 180
     const endRad = (end * Math.PI) / 180
-    const x1 = cx + radius * Math.cos(startRad)
-    const y1 = cy + radius * Math.sin(startRad)
-    const x2 = cx + radius * Math.cos(endRad)
-    const y2 = cy + radius * Math.sin(endRad)
+    const x1 = cx + outer * Math.cos(startRad)
+    const y1 = cy + outer * Math.sin(startRad)
+    const x2 = cx + outer * Math.cos(endRad)
+    const y2 = cy + outer * Math.sin(endRad)
+    const x3 = cx + inner * Math.cos(endRad)
+    const y3 = cy + inner * Math.sin(endRad)
+    const x4 = cx + inner * Math.cos(startRad)
+    const y4 = cy + inner * Math.sin(startRad)
     const largeArc = end - start > 180 ? 1 : 0
-    return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`
+    return `M ${x1} ${y1} A ${outer} ${outer} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${inner} ${inner} 0 ${largeArc} 0 ${x4} ${y4} Z`
   }
+
+  const hoveredSegment = pieData.find((s) => s.categoryId === hoveredId)
 
   return (
     <motion.div
@@ -125,52 +141,66 @@ export function SpendingPieChart() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
     >
-      <div className="spending-pie-chart__container">
-        <div className="spending-pie-chart__chart">
-          <svg viewBox="0 0 200 200" className="spending-pie-chart__svg">
-            {pieData.map((segment, idx) => (
+      <div className="spending-pie-chart__wrapper">
+        <svg viewBox="0 0 300 300" className="spending-pie-chart__svg">
+          {pieData.map((segment, idx) => (
+            <g
+              key={segment.categoryId}
+              onMouseEnter={() => setHoveredId(segment.categoryId)}
+              onMouseLeave={() => setHoveredId(null)}
+              className="spending-pie-chart__segment"
+              style={{ cursor: 'pointer' }}
+            >
               <motion.path
-                key={segment.categoryId}
-                d={pathData(segment.startAngle, segment.endAngle)}
+                d={pathData(
+                  segment.startAngle,
+                  segment.endAngle,
+                  hoveredId === segment.categoryId ? outerRadius + 15 : outerRadius,
+                  innerRadius,
+                )}
                 fill={segment.color}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: idx * 0.05 }}
+                className="spending-pie-chart__path"
               />
-            ))}
-            <circle cx={cx} cy={cy} r={35} fill="var(--color-page)" />
-            <text
-              x={cx}
-              y={cy - 8}
-              textAnchor="middle"
-              className="spending-pie-chart__total-label"
-            >
-              Total
-            </text>
-            <text
-              x={cx}
-              y={cy + 12}
-              textAnchor="middle"
-              className="spending-pie-chart__total-amount"
-            >
-              {formatCurrency(total, currency)}
-            </text>
-          </svg>
-        </div>
-
-        <div className="spending-pie-chart__legend">
-          {segments.map((segment) => (
-            <div key={segment.categoryId} className="spending-pie-chart__legend-item">
-              <div className="spending-pie-chart__color-box" style={{ backgroundColor: segment.color }} />
-              <div className="spending-pie-chart__legend-info">
-                <div className="spending-pie-chart__category-name">{segment.name}</div>
-                <div className="spending-pie-chart__category-amount">
-                  {formatCurrency(segment.amount, currency)} ({segment.percentage.toFixed(0)}%)
-                </div>
-              </div>
-            </div>
+            </g>
           ))}
-        </div>
+          <circle cx={cx} cy={cy} r={innerRadius - 5} fill="var(--color-page)" />
+          <text
+            x={cx}
+            y={cy - 8}
+            textAnchor="middle"
+            className="spending-pie-chart__total-label"
+          >
+            Total
+          </text>
+          <text
+            x={cx}
+            y={cy + 12}
+            textAnchor="middle"
+            className="spending-pie-chart__total-amount"
+          >
+            {formatCurrency(total, currency)}
+          </text>
+        </svg>
+
+        {hoveredSegment && (
+          <motion.div
+            className="spending-pie-chart__tooltip"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="spending-pie-chart__tooltip-name">{hoveredSegment.name}</div>
+            <div className="spending-pie-chart__tooltip-amount">
+              {formatCurrency(hoveredSegment.amount, currency)}
+            </div>
+            <div className="spending-pie-chart__tooltip-percentage">
+              {hoveredSegment.percentage.toFixed(1)}%
+            </div>
+          </motion.div>
+        )}
       </div>
     </motion.div>
   )
