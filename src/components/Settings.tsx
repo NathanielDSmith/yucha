@@ -5,6 +5,7 @@ import { useToast } from '../lib/toastStore'
 import { BudgetPlanner } from './BudgetPlanner'
 import { AccountManagement } from './AccountManagement'
 import { exportData, importData, downloadBackup, readBackupFile } from '../lib/dataBackup'
+import type { CurrencyCode } from '../lib/currencies'
 import './Settings.css'
 
 type SettingsTab = 'personal' | 'budget' | 'accounts' | 'backup'
@@ -71,8 +72,9 @@ export function Settings() {
 
   async function handleCurrencyChange(newCurrency: string) {
     try {
-      setCurrency(newCurrency)
-      await db.appSettings.update(APP_SETTINGS_ID, { currency: newCurrency })
+      const currencyCode = newCurrency as CurrencyCode
+      setCurrency(currencyCode)
+      await db.appSettings.update(APP_SETTINGS_ID, { currency: currencyCode })
       showToast('Currency updated', 'success')
     } catch (err) {
       showToast('Failed to update currency', 'error')

@@ -1,12 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { costPerUse, totalPaid, type Subscription } from '../lib/subscriptions'
 import { formatCurrency } from '../lib/currency'
-import { db } from '../lib/db'
+import { db, type SpendingCategory } from '../lib/db'
 import { today } from '../lib/dates'
+import { getOrCreateCategory, getAllCategories } from '../lib/categoryManager'
 import './Subscriptions.css'
 
 export function Subscriptions() {
   const [subs, setSubs] = useState<Subscription[]>([])
+  const [categories, setCategories] = useState<SpendingCategory[]>([])
   const [name, setName] = useState('')
   const [category, setCategory] = useState('')
   const [monthlyAmount, setMonthlyAmount] = useState('')
@@ -18,7 +20,12 @@ export function Subscriptions() {
   }
 
   useEffect(() => {
-    refresh()
+    async function load() {
+      const cats = await getAllCategories()
+      setCategories(cats)
+      await refresh()
+    }
+    load()
   }, [])
 
   async function handleSubmit(e: FormEvent) {
@@ -26,10 +33,13 @@ export function Subscriptions() {
     const amount = Number(monthlyAmount)
     if (!name.trim() || !amount || amount <= 0) return
 
+    const categoryName = category.trim() || 'subscriptions'
+    const categoryRecord = await getOrCreateCategory(categoryName)
+
     await db.subscriptions.add({
       id: crypto.randomUUID(),
       name: name.trim(),
-      category: category.trim() || 'subscriptions',
+      categoryId: categoryRecord.id,
       monthlyAmount: amount,
       startDate,
       usageCount: 0,
@@ -37,6 +47,8 @@ export function Subscriptions() {
     setName('')
     setCategory('')
     setMonthlyAmount('')
+    const cats = await getAllCategories()
+    setCategories(cats)
     await refresh()
   }
 
@@ -99,12 +111,13 @@ export function Subscriptions() {
         {subs.map((sub) => {
           const paid = totalPaid(sub)
           const perUse = costPerUse(sub)
+          const categoryRecord = categories.find((c) => c.id === sub.categoryId)
           return (
             <div className="subscriptions__card" key={sub.id}>
               <div className="subscriptions__card-header">
                 <div>
                   <strong>{sub.name}</strong>
-                  <span className="subscriptions__category">{sub.category}</span>
+                  <span className="subscriptions__category">{categoryRecord?.name || 'Unknown'}</span>
                 </div>
                 <button
                   type="button"

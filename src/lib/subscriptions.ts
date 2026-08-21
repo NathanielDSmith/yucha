@@ -4,7 +4,7 @@ import { roundCents } from './money'
 export interface Subscription {
   id: string
   name: string
-  category: string
+  categoryId: string
   monthlyAmount: number
   startDate: string // ISO yyyy-mm-dd
   usageCount: number

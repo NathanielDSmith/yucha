@@ -38,14 +38,14 @@ export async function updateCategoryColor(categoryId: string, colorId: string): 
   await db.spendingCategories.update(categoryId, { color: colorId })
 }
 
-export async function getCategoryHexColor(categoryName: string): Promise<string> {
-  const category = await getCategoryByName(categoryName)
+export async function getCategoryHexColor(categoryId: string): Promise<string> {
+  const category = await db.spendingCategories.get(categoryId)
   return category ? getCategoryColor(category.color) : getCategoryColor('yellow')
 }
 
-export async function getCategoryUsageCount(categoryName: string): Promise<number> {
-  const count = await db.spendingEntries.where('category').equals(categoryName).count()
-  const subCount = await db.subscriptions.where('category').equals(categoryName).count()
+export async function getCategoryUsageCount(categoryId: string): Promise<number> {
+  const count = await db.spendingEntries.where('categoryId').equals(categoryId).count()
+  const subCount = await db.subscriptions.where('categoryId').equals(categoryId).count()
   return count + subCount
 }
 
@@ -55,7 +55,7 @@ export async function deleteCategory(categoryId: string): Promise<{ success: boo
     return { success: false, usageCount: 0 }
   }
 
-  const usageCount = await getCategoryUsageCount(category.name)
+  const usageCount = await getCategoryUsageCount(categoryId)
   if (usageCount > 0) {
     return { success: false, usageCount }
   }

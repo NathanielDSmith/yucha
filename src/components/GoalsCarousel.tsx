@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { formatCurrency } from '../lib/currency'
 import type { Goal } from '../lib/goals'
+import type { CurrencyCode } from '../lib/currencies'
 
 interface GoalsCarouselProps {
   goals: Goal[]
-  currency?: string
+  currency?: CurrencyCode
 }
 
-export function GoalsCarousel({ goals, currency = 'USD' }: GoalsCarouselProps) {
+export function GoalsCarousel({ goals, currency = 'USD' as CurrencyCode }: GoalsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {

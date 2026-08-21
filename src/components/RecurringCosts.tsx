@@ -3,8 +3,9 @@ import { costPerUse, totalPaid, type Subscription } from '../lib/subscriptions'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { getCurrency } from '../lib/currencies'
-import { db } from '../lib/db'
+import { db, type SpendingCategory } from '../lib/db'
 import { useToast } from '../lib/toastStore'
+import { getOrCreateCategory, getAllCategories } from '../lib/categoryManager'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ErrorMessage } from './ErrorMessage'
 import { RecurringCostsCalendar } from './RecurringCostsCalendar'
@@ -28,6 +29,7 @@ function today(): number {
 export function RecurringCosts() {
   const { show: showToast } = useToast()
   const [costs, setCosts] = useState<Subscription[]>([])
+  const [categories, setCategories] = useState<SpendingCategory[]>([])
   const [name, setName] = useState('')
   const [category, setCategory] = useState<CostCategory>('other')
   const [monthlyAmount, setMonthlyAmount] = useState('')
@@ -58,6 +60,12 @@ export function RecurringCosts() {
       try {
         setLoading(true)
         setError(null)
+        // Ensure cost categories exist
+        for (const categoryName of Object.values(COST_CATEGORIES)) {
+          await getOrCreateCategory(categoryName)
+        }
+        const cats = await getAllCategories()
+        setCategories(cats)
         await refresh()
       } catch (err) {
         setError('Failed to load data. Please try again.')
@@ -72,7 +80,10 @@ export function RecurringCosts() {
   function startEdit(cost: Subscription) {
     setEditingId(cost.id)
     setName(cost.name)
-    setCategory(Object.entries(COST_CATEGORIES).find(([_, v]) => v === cost.category)?.[0] as CostCategory || 'other')
+    // Find which COST_CATEGORY this subscription belongs to by looking up the category name
+    const categoryRecord = categories.find((c) => c.id === cost.categoryId)
+    const categoryKey = Object.entries(COST_CATEGORIES).find(([_, v]) => v === categoryRecord?.name)?.[0] as CostCategory || 'other'
+    setCategory(categoryKey)
     setMonthlyAmount(String(cost.monthlyAmount))
     const dayMatch = cost.startDate.match(/\d+-\d+-(\d+)/)
     setDayOfMonth(dayMatch ? Number(dayMatch[1]) : today())
@@ -104,11 +115,13 @@ export function RecurringCosts() {
     try {
       setSubmitting(true)
       const dateStr = `2024-01-${String(dayOfMonth).padStart(2, '0')}`
+      const categoryName = COST_CATEGORIES[category]
+      const categoryRecord = await getOrCreateCategory(categoryName)
 
       if (editingId) {
         await db.subscriptions.update(editingId, {
           name: name.trim(),
-          category: COST_CATEGORIES[category],
+          categoryId: categoryRecord.id,
           monthlyAmount: amount,
           startDate: dateStr,
         })
@@ -117,7 +130,7 @@ export function RecurringCosts() {
         await db.subscriptions.add({
           id: crypto.randomUUID(),
           name: name.trim(),
-          category: COST_CATEGORIES[category],
+          categoryId: categoryRecord.id,
           monthlyAmount: amount,
           startDate: dateStr,
           usageCount: 0,
@@ -254,12 +267,13 @@ export function RecurringCosts() {
               {costs.map((cost) => {
               const paid = totalPaid(cost)
               const perUse = costPerUse(cost)
+              const categoryRecord = categories.find((c) => c.id === cost.categoryId)
               return (
                 <div className="subscriptions__card" key={cost.id}>
                   <div className="subscriptions__card-header">
                     <div>
                       <strong>{cost.name}</strong>
-                      <span className="subscriptions__category">{cost.category}</span>
+                      <span className="subscriptions__category">{categoryRecord?.name || 'Unknown'}</span>
                     </div>
                     <div className="subscriptions__card-actions">
                       <button
