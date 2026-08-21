@@ -1,0 +1,94 @@
+.spending-treemap {
+  width: 100%;
+}
+
+.spending-treemap__container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.spending-treemap__svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.spending-treemap__item {
+  transition: filter 0.2s ease;
+}
+
+.spending-treemap__item:hover {
+  filter: brightness(1.1);
+}
+
+.spending-treemap__rect {
+  transition: stroke-width 0.2s ease;
+}
+
+.spending-treemap__item:hover .spending-treemap__rect {
+  stroke-width: 3;
+}
+
+.spending-treemap__label {
+  pointer-events: none;
+}
+
+.spending-treemap__name {
+  font-size: 13px;
+  font-weight: 600;
+  fill: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.spending-treemap__amount {
+  font-size: 12px;
+  font-weight: 500;
+  fill: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.spending-treemap__percentage {
+  font-size: 11px;
+  font-weight: 400;
+  fill: #ffffff;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.spending-treemap__tooltip-group {
+  pointer-events: none;
+}
+
+.spending-treemap__tooltip-name {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--color-text);
+}
+
+.spending-treemap__tooltip-value {
+  font-size: 11px;
+  font-weight: 500;
+  fill: var(--color-text-muted);
+}
+
+@media (max-width: 600px) {
+  .spending-treemap__container {
+    aspect-ratio: 1.5 / 2;
+  }
+
+  .spending-treemap__name {
+    font-size: 11px;
+  }
+
+  .spending-treemap__amount {
+    font-size: 10px;
+  }
+
+  .spending-treemap__percentage {
+    font-size: 9px;
+  }
+}

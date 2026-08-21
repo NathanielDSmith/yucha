@@ -25,23 +25,25 @@ const COLOR_NAME_MAP: Record<string, string> = {
   gray: '#999999',
 }
 
-// Diverse color palette for pie charts - ensures visual distinction
+// Diverse color palette for pie charts - everyday colors with high distinctiveness
+// Inspired by automotive industry (proven visually distinct palette)
 export const CATEGORY_COLORS = [
-  '#F4D03F', // Yellow (primary)
-  '#1E8E4E', // Green
-  '#E4483C', // Red
-  '#2a78d6', // Blue
-  '#eb6834', // Orange
-  '#9d7fe8', // Purple
-  '#ff89b4', // Pink
-  '#1a9b8e', // Teal
-  '#d4a574', // Brown
-  '#e85d75', // Rose
-  '#f8b195', // Peach
-  '#ff6b9d', // Hot Pink
-  '#c44569', // Dark Red
-  '#12c2e9', // Cyan
-  '#f78e69', // Coral
+  { id: 'red', hex: '#e34948', name: 'Red' },
+  { id: 'gold', hex: '#eda100', name: 'Gold' },
+  { id: 'pink', hex: '#e87ba4', name: 'Pink' },
+  { id: 'green', hex: '#008300', name: 'Green' },
+  { id: 'purple', hex: '#4a3aa7', name: 'Purple' },
+  { id: 'orange', hex: '#eb6834', name: 'Orange' },
+  { id: 'blue', hex: '#2a78d6', name: 'Blue' },
+  { id: 'teal', hex: '#1baf7a', name: 'Teal' },
+  { id: 'brown', hex: '#8b4513', name: 'Brown' },
+  { id: 'silver', hex: '#c0c0c0', name: 'Silver' },
+  { id: 'gold-bright', hex: '#ffd700', name: 'Bright Gold' },
+  { id: 'white', hex: '#f5f5f5', name: 'Pearl White' },
+  { id: 'hotpink', hex: '#ff69b4', name: 'Hot Pink' },
+  { id: 'turquoise', hex: '#00ced1', name: 'Turquoise' },
+  { id: 'orchid', hex: '#9932cc', name: 'Dark Orchid' },
+  { id: 'darkorange', hex: '#ff8c00', name: 'Dark Orange' },
 ]
 
 // Get hex color from color name (for existing category color strings)
@@ -53,5 +55,5 @@ export function getCategoryColor(colorName: string): string {
 export function getPieChartColor(categoryIndex: number, categoryId: string): string {
   const hash = categoryId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
   const colorIndex = (categoryIndex + hash) % CATEGORY_COLORS.length
-  return CATEGORY_COLORS[colorIndex]
+  return CATEGORY_COLORS[colorIndex].hex
 }
