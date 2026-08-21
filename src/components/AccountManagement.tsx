@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { db } from '../lib/db'
+import { db, type Account } from '../lib/db'
+import { type SpendingEntry } from '../lib/spending'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { useToast } from '../lib/toastStore'
@@ -11,8 +12,8 @@ import './AccountManagement.css'
 
 export function AccountManagement() {
   const { show: showToast } = useToast()
-  const [accounts, setAccounts] = useState([])
-  const [spendingEntries, setSpendingEntries] = useState([])
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [spendingEntries, setSpendingEntries] = useState<SpendingEntry[]>([])
   const [name, setName] = useState('')
   const [balance, setBalance] = useState('')
   const [type, setType] = useState<AccountType>('savings')
