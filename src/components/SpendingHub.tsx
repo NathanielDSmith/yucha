@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { SpendingLog } from './SpendingLog'
 import { RecurringCosts } from './RecurringCosts'
+import { SpendingAggregates } from './SpendingAggregates'
 
 export function SpendingHub() {
   const [subTab, setSubTab] = useState<'everyday' | 'recurring'>('everyday')
 
   return (
     <div>
+      <SpendingAggregates />
       <div style={{ display: 'flex', gap: 'var(--space-md)', marginBottom: 'var(--space-2xl)', borderBottom: '1px solid var(--color-border)', paddingBottom: 'var(--space-lg)' }}>
         <button
           onClick={() => setSubTab('everyday')}

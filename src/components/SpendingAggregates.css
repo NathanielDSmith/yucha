@@ -1,0 +1,112 @@
+.spending-aggregates {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  margin-bottom: var(--space-2xl);
+}
+
+.spending-aggregates__header {
+  margin-bottom: var(--space-2xl);
+}
+
+.spending-aggregates__title {
+  margin: 0 0 var(--space-xs) 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.spending-aggregates__subtitle {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.spending-aggregates__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+}
+
+.spending-aggregates__item {
+  display: grid;
+  grid-template-columns: 120px 1fr 120px;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+.spending-aggregates__category {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+  min-width: 0;
+}
+
+.spending-aggregates__bar {
+  height: 8px;
+  background: var(--color-page);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.spending-aggregates__fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
+  transition: width var(--transition-base);
+}
+
+.spending-aggregates__amount {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.spending-aggregates__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.spending-aggregates__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.spending-aggregates__total {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+@media (max-width: 600px) {
+  .spending-aggregates {
+    padding: var(--space-lg);
+    margin-bottom: var(--space-xl);
+  }
+
+  .spending-aggregates__item {
+    grid-template-columns: 1fr auto;
+    gap: var(--space-sm);
+  }
+
+  .spending-aggregates__category {
+    font-size: var(--font-size-xs);
+  }
+
+  .spending-aggregates__amount {
+    font-size: var(--font-size-xs);
+  }
+
+  .spending-aggregates__bar {
+    grid-column: 1 / -1;
+    height: 6px;
+  }
+}
