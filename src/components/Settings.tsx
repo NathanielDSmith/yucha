@@ -8,7 +8,7 @@ import { exportData, importData, downloadBackup, readBackupFile } from '../lib/d
 import type { CurrencyCode } from '../lib/currencies'
 import './Settings.css'
 
-type SettingsTab = 'personal' | 'budget' | 'accounts' | 'backup'
+type SettingsTab = 'personal' | 'budget' | 'accounts' | 'backup' | 'features'
 
 export function Settings() {
   const { currency, setCurrency } = useCurrencyContext()
@@ -22,6 +22,11 @@ export function Settings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('personal')
   const [isExporting, setIsExporting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [goalsEnabled, setGoalsEnabled] = useState(true)
+  const [insightsEnabled, setInsightsEnabled] = useState(true)
+  const [emergencyFundEnabled, setEmergencyFundEnabled] = useState(true)
+  const [burnRateEnabled, setBurnRateEnabled] = useState(true)
+  const [recurringCostsEnabled, setRecurringCostsEnabled] = useState(true)
 
   useEffect(() => {
     async function loadSettings() {
@@ -34,6 +39,11 @@ export function Settings() {
         if (settings?.monthlyIncome) {
           setMonthlyIncome(String(settings.monthlyIncome))
         }
+        setGoalsEnabled(settings?.goalsEnabled ?? true)
+        setInsightsEnabled(settings?.insightsEnabled ?? true)
+        setEmergencyFundEnabled(settings?.emergencyFundEnabled ?? true)
+        setBurnRateEnabled(settings?.burnRateEnabled ?? true)
+        setRecurringCostsEnabled(settings?.recurringCostsEnabled ?? true)
         setLoading(false)
       } catch (err) {
         setError('Failed to load settings')
@@ -105,6 +115,17 @@ export function Settings() {
     }
   }
 
+  async function handleToggleFeature(feature: string, enabled: boolean) {
+    const update = { [feature]: enabled }
+    try {
+      await db.appSettings.update(APP_SETTINGS_ID, update)
+      showToast(`${feature.charAt(0).toUpperCase() + feature.slice(1)} ${enabled ? 'enabled' : 'disabled'}`, 'success')
+    } catch (err) {
+      showToast('Failed to update setting', 'error')
+      console.error('Failed to toggle feature:', err)
+    }
+  }
+
   async function handleExport() {
     try {
       setIsExporting(true)
@@ -161,6 +182,12 @@ export function Settings() {
           onClick={() => setActiveTab('accounts')}
         >
           Accounts
+        </button>
+        <button
+          className={activeTab === 'features' ? 'settings__tab settings__tab--active' : 'settings__tab'}
+          onClick={() => setActiveTab('features')}
+        >
+          Features
         </button>
         <button
           className={activeTab === 'backup' ? 'settings__tab settings__tab--active' : 'settings__tab'}
@@ -248,6 +275,107 @@ export function Settings() {
 
       {activeTab === 'budget' && <BudgetPlanner />}
       {activeTab === 'accounts' && <AccountManagement />}
+
+      {activeTab === 'features' && (
+        <div className="settings__card">
+          <h2>Features</h2>
+          <p className="settings__help-text">
+            Toggle features on or off to customize your experience. Disabled features won't appear in the navigation.
+          </p>
+
+          <div className="settings__toggle-group">
+            <div className="settings__toggle-item">
+              <div>
+                <h3 className="settings__toggle-title">Goals</h3>
+                <p className="settings__toggle-description">Track and manage financial goals with opportunity cost analysis</p>
+              </div>
+              <label className="settings__toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={goalsEnabled}
+                  onChange={(e) => {
+                    setGoalsEnabled(e.target.checked)
+                    handleToggleFeature('goalsEnabled', e.target.checked)
+                  }}
+                />
+                <span className="settings__toggle-slider"></span>
+              </label>
+            </div>
+
+            <div className="settings__toggle-item">
+              <div>
+                <h3 className="settings__toggle-title">Insights</h3>
+                <p className="settings__toggle-description">View net worth, spending analysis, and financial trends</p>
+              </div>
+              <label className="settings__toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={insightsEnabled}
+                  onChange={(e) => {
+                    setInsightsEnabled(e.target.checked)
+                    handleToggleFeature('insightsEnabled', e.target.checked)
+                  }}
+                />
+                <span className="settings__toggle-slider"></span>
+              </label>
+            </div>
+
+            <div className="settings__toggle-item">
+              <div>
+                <h3 className="settings__toggle-title">Emergency Fund Tracker</h3>
+                <p className="settings__toggle-description">Monitor emergency fund adequacy</p>
+              </div>
+              <label className="settings__toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={emergencyFundEnabled}
+                  onChange={(e) => {
+                    setEmergencyFundEnabled(e.target.checked)
+                    handleToggleFeature('emergencyFundEnabled', e.target.checked)
+                  }}
+                />
+                <span className="settings__toggle-slider"></span>
+              </label>
+            </div>
+
+            <div className="settings__toggle-item">
+              <div>
+                <h3 className="settings__toggle-title">Burn Rate Tracker</h3>
+                <p className="settings__toggle-description">Track runway and monthly burn rate</p>
+              </div>
+              <label className="settings__toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={burnRateEnabled}
+                  onChange={(e) => {
+                    setBurnRateEnabled(e.target.checked)
+                    handleToggleFeature('burnRateEnabled', e.target.checked)
+                  }}
+                />
+                <span className="settings__toggle-slider"></span>
+              </label>
+            </div>
+
+            <div className="settings__toggle-item">
+              <div>
+                <h3 className="settings__toggle-title">Recurring Costs</h3>
+                <p className="settings__toggle-description">Track subscriptions and recurring bills</p>
+              </div>
+              <label className="settings__toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={recurringCostsEnabled}
+                  onChange={(e) => {
+                    setRecurringCostsEnabled(e.target.checked)
+                    handleToggleFeature('recurringCostsEnabled', e.target.checked)
+                  }}
+                />
+                <span className="settings__toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
 
       {activeTab === 'backup' && (
         <div className="settings__card">

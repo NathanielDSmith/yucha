@@ -3,7 +3,11 @@ import { SpendingLog } from './SpendingLog'
 import { RecurringCosts } from './RecurringCosts'
 import { SpendingAggregates } from './SpendingAggregates'
 
-export function SpendingHub() {
+interface SpendingHubProps {
+  showRecurringCosts?: boolean
+}
+
+export function SpendingHub({ showRecurringCosts = true }: SpendingHubProps) {
   const [subTab, setSubTab] = useState<'everyday' | 'recurring'>('everyday')
 
   return (
@@ -26,26 +30,28 @@ export function SpendingHub() {
         >
           Everyday Spending
         </button>
-        <button
-          onClick={() => setSubTab('recurring')}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: 'var(--space-md) 0',
-            fontSize: 'var(--font-size-base)',
-            fontWeight: subTab === 'recurring' ? 'var(--font-weight-bold)' : 'var(--font-weight-medium)',
-            color: subTab === 'recurring' ? 'var(--color-primary)' : 'var(--color-text-muted)',
-            cursor: 'pointer',
-            borderBottom: subTab === 'recurring' ? '2px solid var(--color-primary)' : 'none',
-            transition: 'all var(--transition-base)',
-          }}
-        >
-          Recurring Costs
-        </button>
+        {showRecurringCosts && (
+          <button
+            onClick={() => setSubTab('recurring')}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 'var(--space-md) 0',
+              fontSize: 'var(--font-size-base)',
+              fontWeight: subTab === 'recurring' ? 'var(--font-weight-bold)' : 'var(--font-weight-medium)',
+              color: subTab === 'recurring' ? 'var(--color-primary)' : 'var(--color-text-muted)',
+              cursor: 'pointer',
+              borderBottom: subTab === 'recurring' ? '2px solid var(--color-primary)' : 'none',
+              transition: 'all var(--transition-base)',
+            }}
+          >
+            Recurring Costs
+          </button>
+        )}
       </div>
 
       {subTab === 'everyday' && <SpendingLog />}
-      {subTab === 'recurring' && <RecurringCosts />}
+      {showRecurringCosts && subTab === 'recurring' && <RecurringCosts />}
     </div>
   )
 }

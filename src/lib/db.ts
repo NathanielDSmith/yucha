@@ -31,6 +31,11 @@ export interface AppSettings {
   burnRateBalance?: number
   dateOfBirth?: string
   monthlyIncome?: number
+  goalsEnabled?: boolean
+  insightsEnabled?: boolean
+  emergencyFundEnabled?: boolean
+  burnRateEnabled?: boolean
+  recurringCostsEnabled?: boolean
 }
 
 // Single-row tables, always keyed at id 1 — there is exactly one active

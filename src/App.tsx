@@ -32,6 +32,11 @@ function AppContent() {
   })
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
+  const [goalsEnabled, setGoalsEnabled] = useState(true)
+  const [insightsEnabled, setInsightsEnabled] = useState(true)
+  const [emergencyFundEnabled, setEmergencyFundEnabled] = useState(true)
+  const [burnRateEnabled, setBurnRateEnabled] = useState(true)
+  const [recurringCostsEnabled, setRecurringCostsEnabled] = useState(true)
 
   const handleTabChange = (newTab: TabId) => {
     setTab(newTab)
@@ -45,6 +50,11 @@ function AppContent() {
         if (settings?.onboardingComplete) {
           setShowOnboarding(false)
         }
+        setGoalsEnabled(settings?.goalsEnabled ?? true)
+        setInsightsEnabled(settings?.insightsEnabled ?? true)
+        setEmergencyFundEnabled(settings?.emergencyFundEnabled ?? true)
+        setBurnRateEnabled(settings?.burnRateEnabled ?? true)
+        setRecurringCostsEnabled(settings?.recurringCostsEnabled ?? true)
       } catch (err) {
         console.error('Failed to load app settings:', err)
         setShowOnboarding(false)
@@ -67,12 +77,20 @@ function AppContent() {
     )
   }
 
+  const visibleTabs = MAIN_TABS.filter((t) => {
+    if (t.id === 'goals' && !goalsEnabled) return false
+    if (t.id === 'insights-net-worth' && !insightsEnabled) return false
+    if (t.id === 'insights-emergency' && !emergencyFundEnabled) return false
+    if (t.id === 'insights-burn-rate' && !burnRateEnabled) return false
+    return true
+  })
+
   return (
     <main className="app">
       <header className="app__header">
         <h1>Yucha</h1>
         <nav className="app__tabs">
-          {MAIN_TABS.map((t) => (
+          {visibleTabs.map((t) => (
             <button
               key={t.id}
               type="button"
@@ -90,11 +108,11 @@ function AppContent() {
       <div className="app__content">
         <ReviewReminder />
         {tab === 'home' && <Home onNavigate={(newTab) => handleTabChange(newTab as TabId)} />}
-        {tab === 'track-spending' && <SpendingHub />}
-        {tab === 'insights-net-worth' && <NetWorthDashboard />}
-        {tab === 'insights-emergency' && <EmergencyFundTracker />}
-        {tab === 'insights-burn-rate' && <BurnRateTracker />}
-        {tab === 'goals' && <GoalsPlanner />}
+        {tab === 'track-spending' && <SpendingHub showRecurringCosts={recurringCostsEnabled} />}
+        {tab === 'insights-net-worth' && insightsEnabled && <NetWorthDashboard />}
+        {tab === 'insights-emergency' && emergencyFundEnabled && <EmergencyFundTracker />}
+        {tab === 'insights-burn-rate' && burnRateEnabled && <BurnRateTracker />}
+        {tab === 'goals' && goalsEnabled && <GoalsPlanner />}
         {tab === 'settings' && <Settings />}
       </div>
     </main>
