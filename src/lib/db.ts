@@ -92,6 +92,70 @@ class YuchaDB extends Dexie {
       incomeSources: 'id, type, isActive',
       spendingCategories: 'id, name',
     })
+    this.version(7)
+      .stores({
+        budgetConfig: 'id',
+        spendingEntries: 'id, date, categoryId',
+        subscriptions: 'id, categoryId',
+        appSettings: 'id',
+        goals: 'id, priority',
+        accounts: 'id, type',
+        incomeSources: 'id, type, isActive',
+        spendingCategories: 'id, name',
+      })
+      .upgrade(async (tx) => {
+        // Migrate spending entries: category string → categoryId
+        const entries = await tx.table('spendingEntries').toCollection().toArray()
+        for (const entry of entries) {
+          if (entry.category && !entry.categoryId) {
+            // Find or create category with this name
+            const existing = await tx.table('spendingCategories').where('name').equals(entry.category).first()
+            const categoryId = existing?.id || `cat_${crypto.randomUUID()}`
+
+            // Create category if it doesn't exist
+            if (!existing) {
+              await tx.table('spendingCategories').put({
+                id: categoryId,
+                name: entry.category,
+                color: 'gray',
+                createdAt: new Date().toISOString(),
+              })
+            }
+
+            // Update entry with categoryId and remove old category field
+            await tx.table('spendingEntries').update(entry.id, {
+              categoryId,
+              category: undefined,
+            })
+          }
+        }
+
+        // Migrate subscriptions: category string → categoryId
+        const subs = await tx.table('subscriptions').toCollection().toArray()
+        for (const sub of subs) {
+          if (sub.category && !sub.categoryId) {
+            // Find or create category with this name
+            const existing = await tx.table('spendingCategories').where('name').equals(sub.category).first()
+            const categoryId = existing?.id || `cat_${crypto.randomUUID()}`
+
+            // Create category if it doesn't exist
+            if (!existing) {
+              await tx.table('spendingCategories').put({
+                id: categoryId,
+                name: sub.category,
+                color: 'gray',
+                createdAt: new Date().toISOString(),
+              })
+            }
+
+            // Update subscription with categoryId and remove old category field
+            await tx.table('subscriptions').update(sub.id, {
+              categoryId,
+              category: undefined,
+            })
+          }
+        }
+      })
   }
 }
 

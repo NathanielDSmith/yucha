@@ -18,7 +18,7 @@ export function SpendingLog() {
   const [entries, setEntries] = useState<SpendingEntry[]>([])
   const [categories, setCategories] = useState<SpendingCategory[]>([])
   const [amount, setAmount] = useState('')
-  const [category, setCategory] = useState('')
+  const [categoryId, setCategoryId] = useState('')
   const [date, setDate] = useState(today())
   const [note, setNote] = useState('')
   const [loading, setLoading] = useState(true)
@@ -27,7 +27,7 @@ export function SpendingLog() {
   const [submitting, setSubmitting] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editAmount, setEditAmount] = useState('')
-  const [editCategory, setEditCategory] = useState('')
+  const [editCategoryId, setEditCategoryId] = useState('')
   const [editDate, setEditDate] = useState('')
   const [editNote, setEditNote] = useState('')
   const [editValidationError, setEditValidationError] = useState<string | null>(null)
@@ -58,13 +58,11 @@ export function SpendingLog() {
         await seedDefaultCategories()
         await refresh()
         const cats = await getAllCategories()
-        // Deduplicate by name
-        const unique = Array.from(new Map(cats.map((c) => [c.name, c])).values())
-        setCategories(unique)
-        // Build color map
+        setCategories(cats)
+        // Build color map by ID
         const colorMap: Record<string, string> = {}
-        for (const cat of unique) {
-          colorMap[cat.name] = await getCategoryHexColor(cat.name)
+        for (const cat of cats) {
+          colorMap[cat.id] = await getCategoryHexColor(cat.id)
         }
         setCategoryColors(colorMap)
       } catch (err) {
@@ -84,7 +82,7 @@ export function SpendingLog() {
       setShowNewCategoryModal(true)
       e.target.value = '' // Reset dropdown
     } else if (value !== '') {
-      setCategory(value)
+      setCategoryId(value)
     }
   }
 
@@ -93,17 +91,16 @@ export function SpendingLog() {
       return
     }
     try {
-      await getOrCreateCategory(newCategoryName.trim(), newCategoryColor)
+      const newCat = await getOrCreateCategory(newCategoryName.trim(), newCategoryColor)
       const cats = await getAllCategories()
-      const unique = Array.from(new Map(cats.map((c) => [c.name, c])).values())
-      setCategories(unique)
+      setCategories(cats)
       // Rebuild color map
       const colorMap: Record<string, string> = {}
-      for (const cat of unique) {
-        colorMap[cat.name] = await getCategoryHexColor(cat.name)
+      for (const cat of cats) {
+        colorMap[cat.id] = await getCategoryHexColor(cat.id)
       }
       setCategoryColors(colorMap)
-      setCategory(newCategoryName.trim())
+      setCategoryId(newCat.id)
       setShowNewCategoryModal(false)
       setNewCategoryName('')
       setNewCategoryColor('yellow')
@@ -121,33 +118,27 @@ export function SpendingLog() {
       setValidationError('Amount must be greater than 0')
       return
     }
-    if (!category.trim()) {
+    if (!categoryId) {
       setValidationError('Category is required')
       return
     }
 
     try {
       setSubmitting(true)
-      const trimmedCategory = category.trim()
-      // Auto-create category if it doesn't exist
-      await getOrCreateCategory(trimmedCategory)
       const entry: SpendingEntry = {
         id: crypto.randomUUID(),
         amount: parsedAmount,
         date,
-        category: trimmedCategory,
+        categoryId,
         note: note.trim() || undefined,
       }
       await db.spendingEntries.add(entry)
       setAmount('')
-      setCategory('')
+      setCategoryId('')
       setNote('')
       setValidationError(null)
       showToast('Spending logged successfully', 'success')
       await refresh()
-      // Refresh categories in case a new one was created
-      const cats = await getAllCategories()
-      setCategories(cats)
     } catch (err) {
       showToast('Failed to log spending. Please try again.', 'error')
       console.error('Failed to add spending entry:', err)
@@ -159,7 +150,7 @@ export function SpendingLog() {
   function handleEdit(entry: SpendingEntry) {
     setEditingId(entry.id)
     setEditAmount(String(entry.amount))
-    setEditCategory(entry.category)
+    setEditCategoryId(entry.categoryId)
     setEditDate(entry.date)
     setEditNote(entry.note || '')
     setEditValidationError(null)
@@ -174,7 +165,7 @@ export function SpendingLog() {
       setEditValidationError('Amount must be greater than 0')
       return
     }
-    if (!editCategory.trim()) {
+    if (!editCategoryId) {
       setEditValidationError('Category is required')
       return
     }
@@ -183,7 +174,7 @@ export function SpendingLog() {
       setSubmitting(true)
       await db.spendingEntries.update(editingId!, {
         amount: parsedAmount,
-        category: editCategory.trim(),
+        categoryId: editCategoryId,
         date: editDate,
         note: editNote.trim() || undefined,
       })
@@ -234,7 +225,7 @@ export function SpendingLog() {
         />
         <div className="spending-log__category-input">
           <select
-            value={category}
+            value={categoryId}
             onChange={handleCategoryChange}
             disabled={submitting}
             aria-label="Spending category"
@@ -242,7 +233,7 @@ export function SpendingLog() {
           >
             <option value="">Select category...</option>
             {categories.map((cat) => (
-              <option key={cat.id} value={cat.name} style={{ color: categoryColors[cat.name] || 'inherit' }}>
+              <option key={cat.id} value={cat.id} style={{ color: categoryColors[cat.id] || 'inherit' }}>
                 {cat.name}
               </option>
             ))}
@@ -284,46 +275,49 @@ export function SpendingLog() {
         <EmptyState message="No spending logged yet. Add your first entry above." />
       ) : (
         <ul className="spending-log__list">
-          {entries.map((entry) => (
-            <li key={entry.id}>
-              <span className="spending-log__date">{entry.date}</span>
-              <span
-                className="spending-log__category"
-                style={{
-                  borderColor: categoryColors[entry.category] || 'var(--color-primary)',
-                  backgroundColor: categoryColors[entry.category] ? `${categoryColors[entry.category]}20` : 'var(--color-primary-wash)',
-                }}
-              >
-                {entry.category}
-              </span>
-              {entry.note && <span className="spending-log__note">{entry.note}</span>}
-              <span className="spending-log__amount">{formatCurrency(entry.amount)}</span>
-              <button
-                type="button"
-                className="spending-log__opportunity-btn"
-                aria-label={`View opportunity cost of ${entry.category} entry`}
-                onClick={() => setOpportunityCostEntry(entry)}
-                title="See how much this could grow if invested"
-              >
-                📈
-              </button>
-              <button
-                type="button"
-                className="spending-log__edit-btn"
-                aria-label={`Edit ${entry.category} entry`}
-                onClick={() => handleEdit(entry)}
-              >
-                ✎
-              </button>
-              <button
-                type="button"
-                aria-label={`Delete ${entry.category} entry`}
-                onClick={() => handleDelete(entry.id)}
-              >
-                ✕
-              </button>
-            </li>
-          ))}
+          {entries.map((entry) => {
+            const category = categories.find((c) => c.id === entry.categoryId)
+            return (
+              <li key={entry.id}>
+                <span className="spending-log__date">{entry.date}</span>
+                <span
+                  className="spending-log__category"
+                  style={{
+                    borderColor: categoryColors[entry.categoryId] || 'var(--color-primary)',
+                    backgroundColor: categoryColors[entry.categoryId] ? `${categoryColors[entry.categoryId]}20` : 'var(--color-primary-wash)',
+                  }}
+                >
+                  {category?.name || 'Unknown'}
+                </span>
+                {entry.note && <span className="spending-log__note">{entry.note}</span>}
+                <span className="spending-log__amount">{formatCurrency(entry.amount)}</span>
+                <button
+                  type="button"
+                  className="spending-log__opportunity-btn"
+                  aria-label={`View opportunity cost of ${category?.name || 'entry'}`}
+                  onClick={() => setOpportunityCostEntry(entry)}
+                  title="See how much this could grow if invested"
+                >
+                  📈
+                </button>
+                <button
+                  type="button"
+                  className="spending-log__edit-btn"
+                  aria-label={`Edit ${category?.name || 'entry'}`}
+                  onClick={() => handleEdit(entry)}
+                >
+                  ✎
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Delete ${category?.name || 'entry'}`}
+                  onClick={() => handleDelete(entry.id)}
+                >
+                  ✕
+                </button>
+              </li>
+            )
+          })}
         </ul>
       )}
 
@@ -347,15 +341,19 @@ export function SpendingLog() {
               </label>
               <label>
                 <span>Category</span>
-                <input
-                  type="text"
-                  placeholder="Category"
-                  list="spending-category-options"
-                  value={editCategory}
-                  onChange={(e) => setEditCategory(e.target.value)}
+                <select
+                  value={editCategoryId}
+                  onChange={(e) => setEditCategoryId(e.target.value)}
                   disabled={submitting}
                   aria-describedby={editValidationError ? 'edit-validation-error' : undefined}
-                />
+                >
+                  <option value="">Select category...</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label>
                 <span>Date</span>
@@ -406,7 +404,7 @@ export function SpendingLog() {
                 <div key={cat.id} className="spending-log__category-item">
                   <div
                     className="spending-log__category-swatch"
-                    style={{ backgroundColor: categoryColors[cat.name] || 'var(--color-primary)' }}
+                    style={{ backgroundColor: categoryColors[cat.id] || 'var(--color-primary)' }}
                   />
                   <span className="spending-log__category-name">{cat.name}</span>
                   <button
@@ -414,7 +412,7 @@ export function SpendingLog() {
                     className="spending-log__category-delete"
                     onClick={async () => {
                       try {
-                        const usageCount = await getCategoryUsageCount(cat.name)
+                        const usageCount = await getCategoryUsageCount(cat.id)
                         if (usageCount > 0) {
                           showToast(`Cannot delete "${cat.name}" — it has ${usageCount} entries. Remove or reassign them first.`, 'error')
                           return
@@ -423,15 +421,14 @@ export function SpendingLog() {
                           const result = await deleteCategory(cat.id)
                           if (result.success) {
                             const cats = await getAllCategories()
-                            const unique = Array.from(new Map(cats.map((c) => [c.name, c])).values())
-                            setCategories(unique)
+                            setCategories(cats)
                             const colorMap: Record<string, string> = {}
-                            for (const c of unique) {
-                              colorMap[c.name] = await getCategoryHexColor(c.name)
+                            for (const c of cats) {
+                              colorMap[c.id] = await getCategoryHexColor(c.id)
                             }
                             setCategoryColors(colorMap)
-                            if (category === cat.name) {
-                              setCategory('')
+                            if (categoryId === cat.id) {
+                              setCategoryId('')
                             }
                             showToast('Category deleted', 'success')
                           }

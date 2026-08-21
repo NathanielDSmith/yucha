@@ -5,22 +5,22 @@ export interface SpendingEntry {
   id: string
   amount: number
   date: string // ISO yyyy-mm-dd
-  category: string
+  categoryId: string
   note?: string
 }
 
 export interface CategoryTotal {
-  category: string
+  categoryId: string
   total: number
 }
 
 export function sumByCategory(entries: SpendingEntry[]): CategoryTotal[] {
   const totals = new Map<string, number>()
   for (const entry of entries) {
-    totals.set(entry.category, (totals.get(entry.category) ?? 0) + entry.amount)
+    totals.set(entry.categoryId, (totals.get(entry.categoryId) ?? 0) + entry.amount)
   }
-  return Array.from(totals, ([category, total]) => ({
-    category,
+  return Array.from(totals, ([categoryId, total]) => ({
+    categoryId,
     total: roundCents(total),
   }))
 }
