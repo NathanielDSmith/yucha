@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { db } from '../lib/db'
+import { db, type SpendingEntry } from '../lib/db'
 import { formatCurrency } from '../lib/currency'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { useToast } from '../lib/toastStore'
@@ -10,7 +10,7 @@ import './BurnRateTracker.css'
 
 export function BurnRateTracker() {
   const { show: showToast } = useToast()
-  const [spendingEntries, setSpendingEntries] = useState([])
+  const [spendingEntries, setSpendingEntries] = useState<SpendingEntry[]>([])
   const [currentBalance, setCurrentBalance] = useState<number | null>(null)
   const [newBalance, setNewBalance] = useState('')
   const [loading, setLoading] = useState(true)

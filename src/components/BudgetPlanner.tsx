@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { calculateTotalMonthlyIncome, type IncomeSource } from '../lib/income'
+import { calculateTotalMonthlyIncome } from '../lib/income'
 import { sumByCategory, filterByDateRange, startOfMonth } from '../lib/spending'
 import { formatCurrency } from '../lib/currency'
-import { db, type BudgetConfig } from '../lib/db'
+import { db } from '../lib/db'
 import { useCurrencyContext } from '../lib/CurrencyContext'
 import { AllocationBar } from './AllocationBar'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ErrorMessage } from './ErrorMessage'
-import type { SpendingEntry } from '../lib/spending'
 import './BudgetPlanner.css'
 
 export function BudgetPlanner() {
