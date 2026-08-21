@@ -41,6 +41,14 @@ function AppContent() {
   const handleTabChange = (newTab: TabId) => {
     setTab(newTab)
     localStorage.setItem('yucha_current_tab', newTab)
+    // Use requestAnimationFrame twice to ensure DOM is fully rendered
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, 0)
+        const content = document.querySelector('.app__content')
+        if (content) content.scrollTop = 0
+      })
+    })
   }
 
   useEffect(() => {

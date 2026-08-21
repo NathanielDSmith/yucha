@@ -98,6 +98,16 @@
   transition: all var(--transition-fast);
 }
 
+.spending-log__form input[type="number"]::-webkit-outer-spin-button,
+.spending-log__form input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.spending-log__form input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 .spending-log__category-input {
   display: flex;
   gap: var(--space-sm);
