@@ -6,6 +6,7 @@ import { useToast } from '../lib/toastStore'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ErrorMessage } from './ErrorMessage'
 import { GOAL_CATEGORIES, type Goal, type GoalCategory, getGoalProgress, getGoalStatus } from '../lib/goals'
+import { DEFAULT_ANNUAL_RETURN_RATE } from '../lib/compounding'
 import './GoalsPlanner.css'
 
 export function GoalsPlanner() {
@@ -22,6 +23,15 @@ export function GoalsPlanner() {
   const [fundingGoalId, setFundingGoalId] = useState<string | null>(null)
   const [fundAmount, setFundAmount] = useState('')
   const [fundValidationError, setFundValidationError] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editTargetAmount, setEditTargetAmount] = useState('')
+  const [editCategory, setEditCategory] = useState<GoalCategory>('savings')
+  const [editTargetDate, setEditTargetDate] = useState('')
+  const [editValidationError, setEditValidationError] = useState<string | null>(null)
+  const [opportunityCostGoalId, setOpportunityCostGoalId] = useState<string | null>(null)
+  const [years, setYears] = useState(10)
+  const [ratePercent, setRatePercent] = useState(DEFAULT_ANNUAL_RETURN_RATE * 100)
   const { currency } = useCurrencyContext()
 
   useEffect(() => {
@@ -144,6 +154,53 @@ export function GoalsPlanner() {
     }
   }
 
+  function openEditModal(goal: Goal) {
+    setEditingId(goal.id)
+    setEditName(goal.name)
+    setEditTargetAmount(String(goal.targetAmount))
+    setEditCategory(goal.category as GoalCategory)
+    setEditTargetDate(goal.targetDate || '')
+    setEditValidationError(null)
+  }
+
+  async function handleSaveEdit(e: FormEvent) {
+    e.preventDefault()
+    setEditValidationError(null)
+    const amount = Number(editTargetAmount)
+
+    if (!editName.trim()) {
+      setEditValidationError('Goal name is required')
+      return
+    }
+    if (!amount || amount <= 0) {
+      setEditValidationError('Target amount must be greater than 0')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      await db.goals.update(editingId!, {
+        name: editName.trim(),
+        targetAmount: amount,
+        category: editCategory,
+        targetDate: editTargetDate || undefined,
+      })
+
+      showToast('Goal updated', 'success')
+      setEditingId(null)
+      await refresh()
+    } catch (err) {
+      showToast('Failed to update goal. Please try again.', 'error')
+      console.error('Failed to update goal:', err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  function calculateOpportunityCost(amount: number): number {
+    return amount * (Math.pow(1 + DEFAULT_ANNUAL_RETURN_RATE, years) - 1)
+  }
+
   if (loading) {
     return <LoadingSpinner message="Loading goals..." />
   }
@@ -221,11 +278,29 @@ export function GoalsPlanner() {
                 <div className="goals-planner__card-actions">
                   <button
                     type="button"
+                    onClick={() => setOpportunityCostGoalId(goal.id)}
+                    className="goals-planner__opportunity-btn"
+                    title="See long-term cost of this goal"
+                    aria-label={`View opportunity cost of ${goal.name}`}
+                  >
+                    📈
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => openFundingModal(goal)}
                     className="goals-planner__add-funds"
                     aria-label={`Add funds to ${goal.name}`}
                   >
                     +
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(goal)}
+                    className="goals-planner__edit"
+                    aria-label={`Edit ${goal.name}`}
+                    title="Edit goal"
+                  >
+                    ✎
                   </button>
                   <button
                     type="button"
@@ -308,6 +383,138 @@ export function GoalsPlanner() {
           </div>
         </div>
       )}
+
+      {editingId && (
+        <div className="goals-planner__modal-overlay" onClick={() => setEditingId(null)}>
+          <div className="goals-planner__modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Edit Goal</h2>
+            <form className="goals-planner__edit-form" onSubmit={handleSaveEdit} noValidate>
+              <label>
+                <span>Goal name</span>
+                <input
+                  type="text"
+                  placeholder="Goal name"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  disabled={submitting}
+                  autoFocus
+                />
+              </label>
+              <label>
+                <span>Target amount</span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  placeholder="Target amount"
+                  step="0.01"
+                  value={editTargetAmount}
+                  onChange={(e) => setEditTargetAmount(e.target.value)}
+                  disabled={submitting}
+                />
+              </label>
+              <label>
+                <span>Category</span>
+                <select
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value as GoalCategory)}
+                  disabled={submitting}
+                >
+                  {Object.entries(GOAL_CATEGORIES).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Target date (optional)</span>
+                <input
+                  type="date"
+                  value={editTargetDate}
+                  onChange={(e) => setEditTargetDate(e.target.value)}
+                  disabled={submitting}
+                />
+              </label>
+              {editValidationError && (
+                <ErrorMessage message={editValidationError} />
+              )}
+              <div className="goals-planner__modal-actions">
+                <button
+                  type="button"
+                  className="goals-planner__modal-cancel"
+                  onClick={() => setEditingId(null)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+                <button type="submit" disabled={submitting}>
+                  {submitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {opportunityCostGoalId && (() => {
+        const goal = goals.find((g) => g.id === opportunityCostGoalId)
+        if (!goal) return null
+        const cost = calculateOpportunityCost(goal.targetAmount)
+        return (
+          <div className="goals-planner__modal-overlay" onClick={() => setOpportunityCostGoalId(null)}>
+            <div className="goals-planner__modal goals-planner__modal--opportunity" onClick={(e) => e.stopPropagation()}>
+              <h2>Long-Term Cost of "{goal.name}"</h2>
+              <div className="goals-planner__opportunity-content">
+                <div className="goals-planner__opportunity-stat">
+                  <span className="goals-planner__opportunity-label">Goal Amount</span>
+                  <span className="goals-planner__opportunity-value">{formatCurrency(goal.targetAmount, currency)}</span>
+                </div>
+                <div className="goals-planner__opportunity-stat">
+                  <span className="goals-planner__opportunity-label">Time Horizon</span>
+                  <select value={years} onChange={(e) => setYears(Number(e.target.value))} className="goals-planner__opportunity-select">
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((y) => (
+                      <option key={y} value={y}>{y} years</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="goals-planner__opportunity-stat">
+                  <span className="goals-planner__opportunity-label">Annual Return</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={ratePercent}
+                    onChange={(e) => setRatePercent(Number(e.target.value))}
+                    className="goals-planner__opportunity-input"
+                  />
+                  %
+                </div>
+              </div>
+              <div className="goals-planner__opportunity-result">
+                <p className="goals-planner__opportunity-message">
+                  If you invested <strong>{formatCurrency(goal.targetAmount, currency)}</strong> instead of spending it on this goal, it would grow to:
+                </p>
+                <p className="goals-planner__opportunity-growth">
+                  {formatCurrency(goal.targetAmount + cost, currency)}
+                </p>
+                <p className="goals-planner__opportunity-lost">
+                  That's <strong>{formatCurrency(cost, currency)}</strong> in lost growth potential.
+                </p>
+              </div>
+              <div className="goals-planner__modal-actions">
+                <button
+                  type="button"
+                  className="goals-planner__modal-cancel"
+                  onClick={() => setOpportunityCostGoalId(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
