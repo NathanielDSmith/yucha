@@ -9,6 +9,25 @@ import { getPieChartColor } from '../lib/colors'
 import type { Subscription } from '../lib/subscriptions'
 import './SpendingPieChart.css'
 
+function CustomLegend(props: any) {
+  const { payload } = props
+  if (!payload) return null
+
+  return (
+    <div className="spending-pie-chart__custom-legend">
+      {payload.map((entry: any, index: number) => (
+        <div key={`legend-${index}`} className="spending-pie-chart__legend-item">
+          <div
+            className="spending-pie-chart__legend-dot"
+            style={{ backgroundColor: entry.color }}
+          />
+          <span className="spending-pie-chart__legend-label">{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 interface PieData {
   name: string
   value: number
@@ -100,7 +119,7 @@ export function SpendingPieChart() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
     >
-      <ResponsiveContainer width="100%" height={348}>
+      <ResponsiveContainer width="100%" height={435}>
         <PieChart margin={{ top: 80, right: 20, bottom: 30, left: 20 }}>
           <Pie
             data={data}
@@ -140,6 +159,7 @@ export function SpendingPieChart() {
             verticalAlign="bottom"
             height={40}
             wrapperStyle={{ paddingTop: '10px' }}
+            content={<CustomLegend />}
           />
         </PieChart>
       </ResponsiveContainer>

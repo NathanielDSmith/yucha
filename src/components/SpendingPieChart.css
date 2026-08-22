@@ -2,7 +2,7 @@
   background: var(--color-surface-1);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-lg);
+  padding: var(--space-2xl) var(--space-2xl) var(--space-4xl) var(--space-2xl);
   box-shadow: var(--shadow-sm);
 }
 
@@ -84,6 +84,39 @@
   letter-spacing: 0.5px;
 }
 
+/* Custom legend with circular dots - applies to both desktop and mobile */
+.spending-pie-chart__custom-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  row-gap: 8px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding-top: 10px;
+  margin-bottom: 16px;
+}
+
+.spending-pie-chart__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 auto;
+}
+
+.spending-pie-chart__legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.spending-pie-chart__legend-label {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
   .spending-pie-chart {
     padding: var(--space-lg);
@@ -101,5 +134,16 @@
 
   .spending-pie-chart__legend {
     gap: var(--space-sm);
+  }
+
+  /* Mobile overrides for legend */
+  .spending-pie-chart__custom-legend {
+    gap: 8px;
+    row-gap: 4px;
+    padding-top: 0px;
+  }
+
+  .spending-pie-chart__legend-label {
+    font-size: 12px;
   }
 }

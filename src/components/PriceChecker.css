@@ -98,7 +98,7 @@
 .price-checker__timeline {
   display: flex;
   gap: var(--space-md);
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .price-checker__timeframe {
@@ -141,7 +141,15 @@
     padding: var(--space-md);
   }
 
+  .price-checker__content {
+    grid-template-columns: 1fr;
+  }
+
   .price-checker__timeline {
-    grid-template-columns: repeat(2, 1fr);
+    flex-wrap: wrap;
+  }
+
+  .price-checker__timeframe {
+    flex: 0 1 calc(50% - var(--space-sm));
   }
 }
