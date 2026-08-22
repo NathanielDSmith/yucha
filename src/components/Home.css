@@ -48,6 +48,11 @@
 
 .home__bottom-section {
   margin-top: var(--space-2xl);
+  margin-bottom: var(--space-2xl);
+}
+
+.home .price-checker {
+  margin-top: var(--space-2xl);
 }
 
 @media (max-width: 1024px) {

@@ -69,11 +69,11 @@ export function Home() {
         </div>
       </div>
 
-      <PriceChecker />
-
       <div className="home__bottom-section">
         <UpcomingBills subscriptions={subscriptions} currency={currency} />
       </div>
+
+      <PriceChecker />
     </div>
   )
 }
