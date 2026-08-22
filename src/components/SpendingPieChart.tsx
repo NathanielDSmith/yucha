@@ -119,6 +119,9 @@ export function SpendingPieChart() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
     >
+      <h3 style={{ margin: '0 0 var(--space-lg) 0', fontSize: 'var(--font-size-lg)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-text-primary)' }}>
+        Monthly Spending by Category
+      </h3>
       <ResponsiveContainer width="100%" height={435}>
         <PieChart margin={{ top: 80, right: 20, bottom: 30, left: 20 }}>
           <Pie

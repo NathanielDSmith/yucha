@@ -9,12 +9,27 @@ interface SpendingHubProps {
 }
 
 export function SpendingHub({ showRecurringCosts = true }: SpendingHubProps) {
-  const [subTab, setSubTab] = useState<'income' | 'everyday' | 'recurring'>('everyday')
+  const [subTab, setSubTab] = useState<'overview' | 'income' | 'everyday' | 'recurring'>('overview')
 
   return (
     <div>
-      <SpendingAggregates />
       <div style={{ display: 'flex', gap: 'var(--space-md)', marginBottom: 'var(--space-2xl)', borderBottom: '1px solid var(--color-border)', paddingBottom: 'var(--space-lg)' }}>
+        <button
+          onClick={() => setSubTab('overview')}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: 'var(--space-md) 0',
+            fontSize: 'var(--font-size-base)',
+            fontWeight: subTab === 'overview' ? 'var(--font-weight-bold)' : 'var(--font-weight-medium)',
+            color: subTab === 'overview' ? 'var(--color-primary)' : 'var(--color-text-muted)',
+            cursor: 'pointer',
+            borderBottom: subTab === 'overview' ? '2px solid var(--color-primary)' : 'none',
+            transition: 'all var(--transition-base)',
+          }}
+        >
+          Overview
+        </button>
         <button
           onClick={() => setSubTab('income')}
           style={{
@@ -67,6 +82,7 @@ export function SpendingHub({ showRecurringCosts = true }: SpendingHubProps) {
         )}
       </div>
 
+      {subTab === 'overview' && <SpendingAggregates />}
       {subTab === 'income' && <IncomeManager />}
       {subTab === 'everyday' && <SpendingLog />}
       {showRecurringCosts && subTab === 'recurring' && <RecurringCosts />}
